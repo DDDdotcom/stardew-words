@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🌾 星露谷 · 单词打卡</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body {
+            font-family: 'Segoe UI', 'Courier New', monospace;
+            background: #2d4a2e;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            background-image: radial-gradient(ellipse at 20% 80%, #3f6b41 0%, transparent 70%), radial-gradient(ellipse at 85% 25%, #5a3e2b 0%, transparent 55%), linear-gradient(145deg, #1f3a20, #3d613e);
+        }
+        .container {
+            max-width: 560px;
+            width: 100%;
+            background: #fcf3e0;
+            border-radius: 42px 42px 26px 26px;
+            padding: 20px 18px 26px;
+            box-shadow: 0 12px 0 #6b4f3a, 0 20px 34px rgba(0,0,0,0.6);
+            border: 4px solid #ab8b6b;
+            position: relative;
+        }
+        .container::before {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border-radius: 38px 38px 20px 20px;
+            border: 2px dashed #dcc7a8;
+            pointer-events: none;
+            opacity: 0.45;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 4px dashed #cdb38c;
+        }
+        .title-group { display: flex; align-items: center; gap: 6px; }
+        .title-icon { font-size: 28px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); }
+        .title-text {
+            font-family: 'Press Start 2P','Courier New',monospace;
+            font-size: 13px; color: #3b2a1a;
+            text-shadow: 2px 2px 0 #ebd6b0; line-height: 1.2;
+        }
+        .title-text small { font-size: 8px; display: block; color: #6f523b; letter-spacing: 1px; text-shadow: none; }
+        .streak-badge {
+            background: #f5d742; padding: 4px 10px 4px 8px; border-radius: 40px;
+            font-weight: bold; color: #3b2a1a;
+            box-shadow: inset 0 -3px 0 #c49a2a, 0 4px 0 #7a5e2e;
+            display: flex; align-items: center; gap: 4px;
+            border: 2px solid #efc84a;
+            font-family: 'Press Start 2P',monospace; font-size: 9px;
+            transform: translateY(-2px);
+        }
+        .streak-badge span { font-size: 15px; }
+
+        .stat-bar {
+            display: flex; justify-content: space-around;
+            background: #e7dcc8; border-radius: 60px;
+            padding: 6px 4px; margin-bottom: 12px;
+            border: 3px solid #cbb394;
+            font-size: 12px; font-weight: 700; color: #3b2a1a;
+        }
+        .stat-item { display: flex; align-items: center; gap: 3px; }
+        .stat-item .emoji { font-size: 14px; }
+        .stat-value {
+            background: #fcf3e0; padding: 0 8px; border-radius: 20px;
+            font-family: 'Press Start 2P',monospace; font-size: 9px;
+            line-height: 20px; border: 2px solid #b59773; min-width: 26px; text-align: center;
+        }
+
+        .daily-progress {
+            background: #e7dcc8; border-radius: 40px; padding: 4px 12px 4px 14px;
+            margin-bottom: 10px; border: 3px solid #cbb394;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 12px; font-weight: 600; color: #3b2a1a;
+        }
+        .daily-progress .count { font-family: 'Press Start 2P',monospace; font-size: 10px; }
+        .daily-progress .bar-wrap {
+            flex: 1; margin: 0 8px; height: 10px;
+            background: #dcccaf; border-radius: 20px;
+            border: 2px solid #b3936e; overflow: hidden;
+        }
+        .daily-progress .bar-fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #f7d44a, #f5b342);
+            transition: width 0.3s;
+        }
+
+        .card-wrapper { perspective: 1400px; margin-bottom: 10px; cursor: pointer; }
+        .card {
+            background: #fffbf0; border-radius: 28px; padding: 20px 14px 16px;
+            border: 4px solid #c6aa82;
+            box-shadow: 0 8px 0 #8f7456, inset 0 2px 8px rgba(255,215,150,0.3);
+            text-align: center; min-height: 170px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative;
+            background-image: radial-gradient(circle at 95% 92%, #efe3ce 0%, #fcf3e0 75%);
+        }
+        .card:active { transform: scale(0.98); box-shadow: 0 4px 0 #7d6349; }
+        .word-en {
+            font-family: 'Press Start 2P','Courier New',monospace;
+            font-size: 22px; color: #312618; letter-spacing: 1px;
+            word-break: break-word; line-height: 1.3; margin-bottom: 4px;
+            text-shadow: 2px 2px 0 #eadbc0;
+        }
+        .word-phonetic {
+            font-size: 13px; color: #6f523b; background: #ede3d0;
+            padding: 2px 12px; border-radius: 20px; display: inline-block;
+            margin-bottom: 6px; border: 2px solid #c9b087;
+        }
+        .word-cn {
+            font-size: 18px; font-weight: 600; color: #593c23;
+            background: #eddfcb; padding: 3px 16px; border-radius: 48px;
+            display: inline-block; border: 2px solid #b59874;
+            box-shadow: inset 0 2px 0 #fcf3e0; margin-top: 2px; max-width: 86%;
+        }
+        .example-sentence {
+            margin-top: 8px; font-size: 13px; color: #5a4030;
+            background: #f4ecdb; padding: 4px 12px; border-radius: 30px;
+            border: 2px solid #c9b087; max-width: 94%;
+        }
+        .hint-flip { font-size: 10px; color: #846b4f; margin-top: 6px; background: #dbcbb4; padding: 2px 12px; border-radius: 30px; border: 2px solid #b99c79; }
+
+        .action-row { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; justify-content: center; }
+        .btn {
+            background: #f5e6cf; border: none; border-radius: 46px;
+            padding: 7px 14px; font-weight: 700; font-size: 13px;
+            color: #2f2115; border-bottom: 5px solid #ad8b68;
+            box-shadow: 0 4px 0 #7d654a; cursor: pointer;
+            transition: all 0.05s linear; display: inline-flex;
+            align-items: center; gap: 4px; font-family: inherit;
+            flex: 1 0 auto; justify-content: center;
+        }
+        .btn:active { transform: translateY(4px); border-bottom-width: 2px; box-shadow: 0 1px 0 #7d654a; }
+        .btn-primary { background: #f7d44a; border-bottom-color: #c69f2e; box-shadow: 0 4px 0 #927522; color: #281f0e; }
+        .btn-success { background: #78b159; border-bottom-color: #4d8032; box-shadow: 0 4px 0 #365e21; color: #faf7e8; }
+        .btn-warning { background: #e09f5e; border-bottom-color: #b07637; box-shadow: 0 4px 0 #7a5425; color: #2d1d0e; }
+        .btn-secondary { background: #dac29b; border-bottom-color: #a58662; box-shadow: 0 4px 0 #735d43; }
+        .btn:disabled { opacity: 0.6; transform: translateY(2px); border-bottom-width: 3px; box-shadow: 0 2px 0 #7d654a; cursor: not-allowed; }
+
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 999;
+            justify-content: center; align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #fcf3e0; border-radius: 30px; padding: 24px 20px;
+            max-width: 380px; width: 90%; border: 4px solid #ab8b6b;
+            box-shadow: 0 12px 0 #6b4f3a; text-align: center;
+        }
+        .modal h3 { font-family: 'Press Start 2P',monospace; font-size: 12px; color: #3b2a1a; margin-bottom: 10px; }
+        .modal .spell-cn { font-size: 20px; font-weight: 600; color: #593c23; margin-bottom: 8px; }
+        .modal input {
+            width: 76%; padding: 8px 12px; font-size: 16px;
+            border: 4px solid #b59773; border-radius: 40px;
+            background: #fffbf0; outline: none; text-align: center;
+            font-family: 'Press Start 2P',monospace; letter-spacing: 2px;
+        }
+        .modal input:focus { border-color: #f7d44a; }
+        .modal .result { margin-top: 10px; font-size: 16px; font-weight: 600; min-height: 26px; }
+        .modal .btn-group { margin-top: 14px; display: flex; gap: 8px; justify-content: center; }
+
+        .progress-area { margin-top: 4px; }
+        .progress-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: #412f1d; margin-bottom: 2px; }
+        .progress-track { height: 12px; background: #dcccaf; border-radius: 40px; border: 3px solid #b3936e; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #f7d44a, #f5b342); border-radius: 40px; transition: width 0.3s; }
+
+        @media (max-width: 440px) {
+            .container { padding: 12px 10px 18px; }
+            .word-en { font-size: 18px; }
+            .word-cn { font-size: 15px; }
+            .btn { font-size: 11px; padding: 5px 10px; }
+            .modal input { width: 90%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <div class="header">
+        <div class="title-group">
+            <span class="title-icon">🌾</span>
+            <div class="title-text">单词·谷<small>✦ 高一必修588 ✦</small></div>
+        </div>
+        <div class="streak-badge"><span>🔥</span> <span id="streakDisplay">0</span> 天</div>
+    </div>
+
+    <div class="stat-bar">
+        <div class="stat-item"><span class="emoji">📚</span> 总词 <span class="stat-value" id="totalWords">0</span></div>
+        <div class="stat-item"><span class="emoji">✅</span> 已掌握 <span class="stat-value" id="masteredCount">0</span></div>
+        <div class="stat-item"><span class="emoji">🎯</span> 今日 <span class="stat-value" id="todayCount">0</span></div>
+    </div>
+
+    <div class="daily-progress">
+        <span>🌞 今日任务</span>
+        <div class="bar-wrap"><div class="bar-fill" id="dailyFill" style="width:0%"></div></div>
+        <span class="count" id="dailyCount">0/30</span>
+    </div>
+
+    <div class="card-wrapper" id="cardWrapper">
+        <div class="card" id="wordCard">
+            <div class="word-en" id="wordEn">loading...</div>
+            <div class="word-phonetic" id="wordPhonetic">/ˈləʊdɪŋ/</div>
+            <div class="word-cn" id="wordCn">加载中</div>
+            <div class="example-sentence" id="exampleSentence">请稍候，正在准备单词…</div>
+            <div class="hint-flip">👆 点击卡片翻转 / 下一词</div>
+        </div>
+    </div>
+
+    <div class="action-row">
+        <button class="btn btn-primary" id="nextBtn">⏩ 下一个</button>
+        <button class="btn btn-success" id="masterBtn">🌟 记住了</button>
+        <button class="btn btn-warning" id="spellBtn">✍️ 拼写</button>
+        <button class="btn btn-secondary" id="resetTodayBtn">🔄 重置今日</button>
+    </div>
+
+    <div class="progress-area">
+        <div class="progress-label">
+            <span>🌱 总进度</span>
+            <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 拼写模态框 -->
+<div class="modal-overlay" id="spellModal">
+    <div class="modal">
+        <h3>✍️ 拼写挑战</h3>
+        <p>根据中文写出英文单词：</p>
+        <div id="spellCn" style="font-weight: bold; font-size: 1.3em; margin: 10px 0;"></div>
+        <div class="spell-progress" id="spellProgress">第 1 / 20 个</div>
+        <input type="text" id="spellInput" placeholder="输入英文单词" autocomplete="off" />
+        <div class="result" id="spellResult"></div>
+        <div class="btn-group">
+            <button class="btn btn-primary" id="submitSpell">提交</button>
+            <button class="btn btn-secondary" id="closeSpell">取消</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== 词库（直接定义，不再解析表格） ====================
+const WORD_BANK = [
+    { en: "author", cn: "n.作者", phonetic: "/'o:θər/", example: "谐音“奥!Sir!”原来您就是这本书的作者!", freqRank: 462 },
+    { en: "being", cn: "n.存在;生命,生物", phonetic: "/'bi:ɪŋ/", example: "", freqRank: 336 },
+    { en: "company", cn: "n.公司;陪伴", phonetic: "/'kʌmpəni/", example: "", freqRank: 242 },
+    { en: "improve", cn: "v.提升", phonetic: "/im'pru:v/", example: "朋友误会你了,你进去(im)证明(prove)你是无辜的,以此来改善关系。", freqRank: 176 },
+    { en: "design", cn: "v./n.设计;计划", phonetic: "/dɪ'zaɪn/", example: "de谐音地,sign签字。在地上签字、涂涂写写就是在设计、做计划。", freqRank: 160 },
+    { en: "living", cn: "adj.活的;现存的n.生计;生活方式", phonetic: "/'lɪvɪŋ/", example: "", freqRank: 155 },
+    { en: "power", cn: "n.力量;功率;政权", phonetic: "/'paʊər/", example: "谐音\"怕我\",我有力量,别人怕我。", freqRank: 148 },
+    { en: "likely", cn: "adj.可能的", phonetic: "/'laɪkli/", example: "like像,ly副词后缀,likely可能的。", freqRank: 139 },
+    { en: "volunteer", cn: "n.志愿者v.自愿做", phonetic: "/ˌvɒlən'tɪər/", example: "谐音“我能替尔(vo-lun-te-er)”。我能替尔做事,就是做志愿者。", freqRank: 138 },
+    { en: "means", cn: "n.手段;方法;财产", phonetic: "/mi:nz/", example: "", freqRank: 137 },
+    { en: "energy", cn: "n.精力", phonetic: "/'enədʒi/", example: "", freqRank: 127 },
+    { en: "view", cn: "n.看法;风景", phonetic: "/vju:/", example: "", freqRank: 121 },
+    { en: "reduce", cn: "v.减少;缩小", phonetic: "/rɪ'dju:s/", example: "re往回,duce丢。把一个东西往回丢,降低、减少它。", freqRank: 118 },
+    { en: "focus", cn: "v.聚集n.焦点", phonetic: "/'fəʊkəs/", example: "", freqRank: 116 },
+    { en: "million", cn: "n.百万;无数adj.百万的;无数的num.百万", phonetic: "/'mɪljən/", example: "mi(蜜蜂)+l(了)+lion(狮子)。蜜蜂蛰了狮子百万个包。", freqRank: 115 },
+    { en: "effect", cn: "n.效果;影响", phonetic: "/ɪ'fekt/", example: "e表示“往外”,双写表示“一再地”(任何双写都表示“一再地”),fect做。已经做出来了,就产生了影响和效果。", freqRank: 114 },
+    { en: "title", cn: "n.题目;头衔", phonetic: "/'taɪtl/", example: "谐音“抬头”(ti-tle)。标题总是很显眼,一抬头就能看见。", freqRank: 111 },
+    { en: "effort", cn: "n.努力", phonetic: "/'efət/", example: "ef(拼音)姨夫,for为了,t(形似)伞,姨夫为了伞而努力。", freqRank: 110 },
+    { en: "goal", cn: "n.目标", phonetic: "/ɡəʊl/", example: "go走,al尖棍,走(go),用尖棍(al)去完成我们的目标(goal)。", freqRank: 110 },
+    { en: "memory", cn: "n.记忆;回忆", phonetic: "/'meməri/", example: "埋没(me-mo)事情的地方(ry,表示地方的后缀),就是我们的记忆。", freqRank: 104 },
+    { en: "quality", cn: "n.品质;特性", phonetic: "/'kwɒləti/", example: "qua全,li力,t同,y意。检测方全力同意,说明这个商品的品质、质量很棒。", freqRank: 104 },
+    { en: "experiment", cn: "n.实验,试验", phonetic: "/ɪk'sperɪmənt/", example: "exper(t)专家,ment名词词缀。专家在做实验。", freqRank: 103 },
+    { en: "challenge", cn: "n.挑战", phonetic: "/'tʃælɪndʒ/", example: "你拆灵芝(cha-llen-ge),这难道不是个巨大的挑战(challenge)吗?!", freqRank: 101 },
+    { en: "event", cn: "n.事件", phonetic: "/ɪ'vent/", example: "e-往外,-vent走(go的过去式)。走到外面去看大事。", freqRank: 101 },
+    { en: "actually", cn: "adv.事实上,实际上", phonetic: "/'æktʃuəli/", example: "actual实际的,ly副词后缀,actually实际上。", freqRank: 100 },
+    { en: "base", cn: "n.底部;基础;基地", phonetic: "/beɪs/", example: "弹贝斯需要有基础。", freqRank: 100 },
+    { en: "case", cn: "n.案例;情况;箱子", phonetic: "/keɪs/", example: "", freqRank: 100 },
+    { en: "material", cn: "n.材料;用具", phonetic: "/mə'tɪəriəl/", example: "谐音“磨铁哦”。磨铁这一动作是在加工材料、原料。", freqRank: 99 },
+    { en: "perform", cn: "v.执行;完成;演奏", phonetic: "/pə'fɔ:m/", example: "per全部;form形式。所有的形式都做到了,完成得很好,表演得很棒。", freqRank: 99 },
+    { en: "within", cn: "prep.在......", phonetic: "/wɪð'ɪn/", example: "", freqRank: 98 },
+    { en: "attract", cn: "v.吸引", phonetic: "/ə'trækt/", example: "一再地(att)把你的注意力给拉(tract)过去,叫吸引你。", freqRank: 96 },
+    { en: "benefit", cn: "n.利益v.有益于", phonetic: "/'benɪfɪt/", example: "逼你fit,意思为:逼你健康,也就是对你有益的了", freqRank: 95 },
+    { en: "stress", cn: "n.压力;重音v.强调,着重", phonetic: "/stres/", example: "谐音:试解释,弗洛伊德用梦来试解释压力的来源。", freqRank: 94 },
+    { en: "type", cn: "v.打字n.类型;品种", phonetic: "/taɪp/", example: "typ投影屏,打字后在投影屏幕上出现“e”。", freqRank: 94 },
+    { en: "adult", cn: "n.成年人", phonetic: "/'ædʌlt; ə'dʌlt/", example: "一个(a)喜欢捣腾(dul-t)的人,肯定是成年人。", freqRank: 93 },
+    { en: "opportunity", cn: "n.时机;机会", phonetic: "/ˌɒpə'tju:nəti/", example: "打开(op)港口(port)成一体(unity),机会(opportunity)都来我这里。", freqRank: 93 },
+    { en: "attitude", cn: "n.态度;看法", phonetic: "/'ætɪtju:d/", example: "a+双写tt表示一再地,itude度。做事一再地讲求度,说明态度好。", freqRank: 91 },
+    { en: "concern", cn: "v.关心;担忧;涉及n.关心,忧虑", phonetic: "/kən'sɜ:n/", example: "con共同,cern判断、决定。涉及共同利益的事情,都会引起相关人员的关心。", freqRank: 91 },
+    { en: "percent", cn: "n.百分比", phonetic: "/pə'sent/", example: "per-每,cent-百,百分之一;percent百分比。", freqRank: 89 },
+    { en: "performance", cn: "n.表演;绩效;执行", phonetic: "/pə'fɔ:məns/", example: "per(全);form(形式);ance(名词后缀)。表演需要采取各种(全部的)形式。", freqRank: 89 },
+    { en: "apply", cn: "v.申请;应用;(对...)适用", phonetic: "/ə'plaɪ/", example: "读音似“我不赖”,申请工作时我不赖别人才会用我。", freqRank: 87 },
+    { en: "positive", cn: "adj.积极的", phonetic: "/'pɒzətɪv/", example: "posi婆媳;tive形容词词缀。婆媳争tv遥控器的时候很积极。", freqRank: 87 },
+    { en: "rather", cn: "adv.宁可,宁愿;相当", phonetic: "/'rɑ:ðər/", example: "ra拉,the这,r草,他宁愿拉住这根救命草也不愿求她帮忙。", freqRank: 84 },
+    { en: "moment", cn: "n.时刻", phonetic: "/'məʊmənt/", example: "mo磨蹭,ment名词词缀。别磨蹭了,每一个片刻都是重要时刻。", freqRank: 83 },
+    { en: "opinion", cn: "n.意见;主张", phonetic: "/ə'pɪnjən/", example: "onion洋葱,pi皮,洋葱皮上写有各种观点。", freqRank: 82 },
+    { en: "data", cn: "n.数据,资料", phonetic: "/'deɪtə; 'dɑ:tə/", example: "谐音逮他。经常逮他,因为他有犯罪数据。", freqRank: 81 },
+    { en: "tend", cn: "v.趋向", phonetic: "/tend/", example: "", freqRank: 80 },
+    { en: "inspire", cn: "v.鼓舞", phonetic: "/ɪn'spaɪər/", example: "", freqRank: 79 },
+    { en: "saving", cn: "n.节约", phonetic: "/'seɪvɪŋ/", example: "save动词节约,挽救,ing名词后缀,saving名词节约,挽救。", freqRank: 79 },
+    { en: "demand", cn: "n./v.要求;需要", phonetic: "/dɪ'mɑ:nd/", example: "弟弟(de)很忙(mand)的,因为有生活的需要。", freqRank: 78 },
+    { en: "expert", cn: "n.专家adj.熟练的;内行的;老练的", phonetic: "/'ekspɜ:t/", example: "ex外面,per全部。外面的人都知道他,说明他是一个专家,具备专业的知识。", freqRank: 77 },
+    { en: "affect", cn: "v.影响,作用;感染", phonetic: "/ə'fekt/", example: "a+双写表示一再地,fect做。一再地做一些事,总会体现你的影响。", freqRank: 75 },
+    { en: "treatment", cn: "n.治疗", phonetic: "/'tri:tmənt/", example: "treat动词治疗,ment名词后缀,treatment名词治疗", freqRank: 75 },
+    { en: "average", cn: "n.平均水平,平均数;adj.平均的", phonetic: "/'ævərɪdʒ/", example: "aver断言,age。已知几个人的年龄就可以推断出他们的平均年龄。", freqRank: 74 },
+    { en: "desire", cn: "n./v.渴望,要求", phonetic: "/dɪ'zaɪər/", example: "弟弟(de)思念(si)阿姨(r-e),很渴望见到他。", freqRank: 73 },
+    { en: "amount", cn: "n.数量,总额;v.总计;相当于", phonetic: "/ə'maʊnt/", example: "a一;mount山;一座山。一座山上动植物的总数都是很多的。", freqRank: 72 },
+    { en: "refer", cn: "v.涉及;委托", phonetic: "/rɪ'fɜ:r/", example: "re-一再地,-fe,给。重复给一个点,叫“提及”。", freqRank: 70 },
+    { en: "respect", cn: "n.尊敬;方面v.尊敬;遵守", phonetic: "/rɪ'spekt/", example: "re(反复);spect(看)。反复地看伟人事迹,以此表示崇拜和尊敬。", freqRank: 70 },
+    { en: "major", cn: "adj.重大的", phonetic: "/'meɪdʒər/", example: "maj麻将;or人,打麻将的人主要的目的是娱乐。", freqRank: 69 },
+    { en: "prefer", cn: "v.更喜欢;宁愿", phonetic: "/prɪ'fɜ:r/", example: "p怕re热f反er而。怕热反而还更喜欢吃火锅。", freqRank: 68 },
+    { en: "promote", cn: "v.促进;推销;发扬", phonetic: "/prə'məʊt/", example: "pro往前,mo动,te动词。让一件事往前动,就是在促进它。", freqRank: 67 },
+    { en: "style", cn: "n.风格;文体", phonetic: "/staɪl/", example: "style,史泰龙,史泰龙扮演的硬汉风格闻名于世。", freqRank: 67 },
+    { en: "earn", cn: "v.获得,挣得", phonetic: "/ɜ:n/", example: "", freqRank: 66 },
+    { en: "boxing", cn: "n.拳击", phonetic: "/'bɒksɪŋ/", example: "box动词拳击,加上ing为名词拳击", freqRank: 66 },
+    { en: "creative", cn: "adj.创造性的,有创造力的", phonetic: "/kri'eɪtɪv/", example: "create动词创造,tive形容词后缀,creative创造性的。", freqRank: 65 },
+    { en: "damage", cn: "v./n.损害,毁坏", phonetic: "/'dæmɪdʒ/", example: "打骂(da-ma)你哥(ge),会损害你们的感情。", freqRank: 65 },
+    { en: "plastic", cn: "adj.塑料制的;人造的", phonetic: "/'plæstɪk/", example: "", freqRank: 65 },
+    { en: "global", cn: "adj.全球的", phonetic: "/'gləʊbl/", example: "globe名词球体,al形容词后缀,global全球的", freqRank: 64 },
+    { en: "process", cn: "n.过程;v.加工;处理", phonetic: "/(v.) prə'ses;(n.) 'prəʊses/", example: "pro向前,cess行走。向前行走就是去处理一件事。", freqRank: 64 },
+    { en: "species", cn: "n.物种", phonetic: "/'spi:ʃi:z/", example: "sp-(审批);eci-(二次);es-(很多),审批二次才发现很多物种。", freqRank: 64 },
+    { en: "towel", cn: "n.毛巾", phonetic: "/'taʊəl/", example: '洗(tou)澡用的毛巾(towel)要拧干。', freqRank: 63 },
+    { en: "approach", cn: "v.接近;靠近n.方法;途径", phonetic: "/ə'prəʊtʃ/", example: '一再地(ap)接近(proach)目标。', freqRank: 61 },
+    { en: "beyond", cn: "prep.超出;在……之外", phonetic: "/bɪ'jɒnd/", example: 'be(在)+yond(那边)=在那边,超出范围。', freqRank: 60 },
+    { en: "lack", cn: "n.缺乏v.缺少", phonetic: "/læk/", example: '拉(la)开缺口(ck)就是缺乏(lack)。', freqRank: 60 },
+    { en: "pressure", cn: "n.压力;压迫", phonetic: "/'preʃər/", example: 'press(压)+ure(名词后缀)=压力。', freqRank: 60 },
+    { en: "confidence", cn: "n.自信;信任", phonetic: "/'kɒnfɪdəns/", example: 'con(共同)+fid(信任)+ence(名词)=自信。', freqRank: 59 },
+    { en: "extra", cn: "adj.额外的adv.格外地", phonetic: "/'ekstrə/", example: 'ex(向外)+tra(超过)=额外的。', freqRank: 58 },
+    { en: "explore", cn: "v.探索;考察", phonetic: "/ɪk'splɔ:r/", example: 'ex(向外)+plore(喊叫)=出去喊叫,探索未知。', freqRank: 58 },
+    { en: "individual", cn: "adj.个人的n.个人", phonetic: "/ˌɪndɪ'vɪdʒuəl/", example: 'in(不)+divid(分割)+ual(形容词)=不可分割的,个人的。', freqRank: 58 },
+    { en: "prove", cn: "v.证明;证实", phonetic: "/pru:v/", example: 'pro(向前)+ve(看)=向前看,证明事实。', freqRank: 57 },
+    { en: "recommend", cn: "v.推荐;建议", phonetic: "/ˌrekə'mend/", example: 're(反复)+commend(称赞)=反复称赞,推荐。', freqRank: 57 },
+    { en: "apartment", cn: "n.公寓", phonetic: "/ə'pɑ:tmənt/", example: "每一个部分(a-part)一个门(ment),就隔成了公寓。", freqRank: 59 },
+    { en: "death", cn: "n.死,死亡", phonetic: "/deθ/", example: "", freqRank: 59 },
+    { en: "ignore", cn: "v.忽视", phonetic: "/ɪg'nɔ:r/", example: "一个哥哥(i-g)没有(no)看到那个阿姨(r-e),把她忽视了。", freqRank: 59 },
+    { en: "per", cn: "prep.每,每一", phonetic: "/pər;pɜ:r/", example: "前缀:每个,每一", freqRank: 59 },
+    { en: "saying", cn: "n.谚语,格言,警句", phonetic: "/'seɪɪŋ/", example: "", freqRank: 59 },
+    { en: "schedule", cn: "v.安排,预定;将...列入计划表或清单n.计划(表);时间表", phonetic: "/'ʃedju:l/", example: "sche-(塞车),du-(堵),le-(了)。塞车堵了路,不能按计划表到达。", freqRank: 59 },
+    { en: "track", cn: "n.足迹;轨道;径赛", phonetic: "/træk/", example: "", freqRank: 59 },
+    { en: "supply", cn: "n.供应&供应品v.供应", phonetic: "/sə'plaɪ/", example: "", freqRank: 58 },
+    { en: "suffer", cn: "v.受苦", phonetic: "/'sʌfər/", example: "suff束缚,er人。人被束缚住了就是遭受痛苦。", freqRank: 57 },
+    { en: "prevent", cn: "v.预防,防止;阻止", phonetic: "/prɪ'vent/", example: "pre(前);vent(来)。事情发生之前先来做准备就是预防。", freqRank: 57 },
+    { en: "further", cn: "adv.更远地;进一步地adj.更远的;深一层的", phonetic: "/'fɜ:ðər/", example: "", freqRank: 56 },
+    { en: "roll", cn: "v.滚动;(眼睛)转动n.卷;柱形物;滚动", phonetic: "/rəʊl/", example: "", freqRank: 56 },
+    { en: "seek", cn: "v.寻找;谋求;试图", phonetic: "/si:k/", example: "看(see)客(k)都是在试图寻找东西的人。", freqRank: 56 },
+    { en: "conduct", cn: "v.引导;导电;执行n.行为", phonetic: "/(v.) kən'dʌkt(n.) 'kɒndʌkt/", example: "互相引起电,就导电。", freqRank: 55 },
+    { en: "audience", cn: "n.听众,观众", phonetic: "/'ɔ:diəns/", example: "音似“偶的央视音”(对于观众来说,最喜欢的就是央视了)", freqRank: 55 },
+    { en: "regular", cn: "adj.定期的;有规律的;n.常客", phonetic: "/'regjələr/", example: "一再地(re-)光顾了(gu-lar)一个商店,你就是那里的regular(常客)。说明你去得很有规律、很定期。", freqRank: 55 },
+    { en: "system", cn: "n.体系", phonetic: "/'sɪstəm/", example: "", freqRank: 55 },
+    { en: "regard", cn: "n.问候v.把...看作;与...有关", phonetic: "/rɪ'gɑ:d/", example: "", freqRank: 54 },
+    { en: "lecture", cn: "n.演讲", phonetic: "/'lektʃər/", example: "lect-选,ure表“结果”。演讲都是精选的产物。", freqRank: 54 },
+    { en: "sight", cn: "n.视力;视野;景象", phonetic: "/saɪt/", example: "", freqRank: 54 },
+    { en: "attack", cn: "v./n.攻击,进攻", phonetic: "/ə'tæk/", example: "攻击肯定是一再地(att)打。", freqRank: 53 },
+    { en: "accident", cn: "n.意外事件;事故", phonetic: "/'æksɪdənt/", example: "a(一),cci(次次),dent(等他)。一次次地等他、纵容他,最后意外事件发生了。", freqRank: 53 },
+    { en: "publish", cn: "v.出版;发行;刊印", phonetic: "/'pʌblɪʃ/", example: "", freqRank: 53 },
+    { en: "solution", cn: "n.解决方法", phonetic: "/sə'lu:ʃn/", example: "", freqRank: 53 },
+    { en: "generation", cn: "n.同时代的人", phonetic: "/ˌdʒenə'reɪʃn/", example: "", freqRank: 52 },
+    { en: "forward", cn: "adv.向将来;向前地", phonetic: "/'fɔ:wəd/", example: "for-在前,ward-向;forward向前。", freqRank: 52 },
+    { en: "rate", cn: "n.比率;速度v.认为;估价", phonetic: "/reɪt/", example: "", freqRank: 52 },
+    { en: "relate", cn: "v.使......有联系", phonetic: "/rɪ'leɪt/", example: "", freqRank: 52 },
+    { en: "path", cn: "n.道路;小路", phonetic: "/pɑ:θ/", example: "", freqRank: 51 },
+    { en: "advance", cn: "v.前进;提出;预付n.发展,增长", phonetic: "/əd'vɑ:ns/", example: "要想事情有进展,得先付点预付款。", freqRank: 51 },
+    { en: "appreciate", cn: "v.欣赏,感激", phonetic: "/ə'pri:ʃieɪt/", example: "阿婆(app)如此(reci)爱他(ate)既然如此爱他,自然就欣赏他,感激他了", freqRank: 51 },
+    { en: "sort", cn: "v.分类n.种类;方式", phonetic: "/sɔ:t/", example: "", freqRank: 51 },
+    { en: "strength", cn: "n.力量", phonetic: "/streŋkθ/", example: "", freqRank: 51 },
+    { en: "wave", cn: "n.(热、光、声等的)波,波浪v.挥手;挥动", phonetic: "/weɪv/", example: "", freqRank: 51 },
+    { en: "admit", cn: "v.承认,准许进入", phonetic: "/əd'mɪt/", example: "一个弟弟(a-d)去MIT读书,说明被MIT录取了,会获得大家的承认。", freqRank: 50 },
+    { en: "figure", cn: "n.人物;画像v.计算", phonetic: "/'fɪgər/", example: "", freqRank: 50 },
+    { en: "climate", cn: "n.气候", phonetic: "/'klaɪmət/", example: "cli-爬,mate同事;经常爬山的同事比较了解气候(climate)。", freqRank: 50 },
+    { en: "colleague", cn: "n.同事", phonetic: "/'kɒli:g/", example: "col-共同;league联盟,社团;在同一个社团里的人是同事colleagues。", freqRank: 50 },
+    { en: "contribute", cn: "v.贡献;是......的原因之一", phonetic: "/kən'trɪbju:t;'kɒntrɪbju:t/", example: "一起(con)来进贡贡品(tribute)是“贡献”的意思。", freqRank: 50 },
+    { en: "literature", cn: "n.文学", phonetic: "/'lɪtrətʃər/", example: "", freqRank: 50 },
+    { en: "talent", cn: "n.天才;天分", phonetic: "/'tælənt/", example: "tale-传说,-ent人。传说中的人都是有天赋的人才。", freqRank: 50 },
+    { en: "tough", cn: "adj.艰苦的;严厉的", phonetic: "/tʌf/", example: "", freqRank: 50 },
+    { en: "function", cn: "n.功能v.运行;起作用", phonetic: "/'fʌŋkʃn/", example: "", freqRank: 49 },
+    { en: "range", cn: "n.范围;山脉v.(在......内)变动", phonetic: "/reɪndʒ/", example: "一个很能跑(ran)的哥(ge)哥,运动范围很大,很喜欢漫游、经常爬上山脉。", freqRank: 49 },
+    { en: "hire", cn: "v.雇用;租用", phonetic: "/'haɪər/", example: "你好(hi),阿姨(r-e),可以雇用(hire)我么?", freqRank: 49 },
+    { en: "intend", cn: "v.计划", phonetic: "/ɪn'tend/", example: '心里(in)在延伸(tend)一个想法,叫"打算,意图"做某事。', freqRank: 49 },
+    { en: "issue", cn: "n.问题;v.发行", phonetic: "/'ɪʃu:;'ɪsju:/", example: "谐音“一休”。一休哥在格叽格叽的时候是在想问题和琢磨热点事件。", freqRank: 49 },
+    { en: "therefore", cn: "adv.因此", phonetic: "/'ðeəfɔ:r/", example: "", freqRank: 49 },
+    { en: "unique", cn: "adj.唯一的", phonetic: "/ju'ni:k/", example: "只有一个(uni)客(que)人,是独一无二的。", freqRank: 49 },
+    { en: "vehicle", cn: "n.车辆;工具", phonetic: "/'vi:əkl/", example: "", freqRank: 49 },
+    { en: "application", cn: "n.应用;申请", phonetic: "/ˌæplɪ'keɪʃn/", example: "", freqRank: 48 },
+    { en: "calm", cn: "adj.平静的v.(使)平静", phonetic: "/kɑ:m/", example: "首字母“卡了门(ca-l-m)”。卡了门,不要急!要沉着、镇静(calm)下来!", freqRank: 48 },
+    { en: "aim", cn: "n.目标;v.瞄准", phonetic: "/eɪm/", example: "音似“爱母(ai-m)”。好好爱母亲是我们每个人的目标(aim)。", freqRank: 47 },
+    { en: "contact", cn: "v.联系,使接触n.接触,联系", phonetic: "/'kɒntækt/", example: "con-一起,-t-act他-活动。和他(t)一起(con)活动(act),接触他。", freqRank: 47 },
+    { en: "loss", cn: "n.损失", phonetic: "/lɒs/", example: "落(lo)泪的思思(SS)一定失去(loss)了什么。", freqRank: 47 },
+    { en: "signal", cn: "n.信号;标志", phonetic: "/'sɪgnəl/", example: "", freqRank: 47 },
+    { en: "responsibility", cn: "n.责任,职责;义务", phonetic: "/rɪˌspɒnsə'bɪləti/", example: "response=反应ability=能力。有能力作出反应就=有责任(e+a化为i)。", freqRank: 46 },
+    { en: "argue", cn: "v.争论;辩论,说服", phonetic: "/'ɑ:gju:/", example: "阿哥(ar-g)有意(u-e)见,所以有自己的主张,经常跟人argue争论。", freqRank: 46 },
+    { en: "contain", cn: "v.包含,容纳", phonetic: "/kən'teɪn/", example: "大家(con-)都拿着(tain),容纳在中间。", freqRank: 46 },
+    { en: "disease", cn: "n.疾病", phonetic: "/dɪ'zi:z/", example: "dis否定,ease轻松。不轻松,就会生病。", freqRank: 46 },
+    { en: "shock", cn: "v.使震惊,震惊", phonetic: "/ʃɒk/", example: "", freqRank: 46 },
+    { en: "variety", cn: "n.多样性;种类", phonetic: "/və'raɪəti/", example: "vari(y)-变化,ety-词尾;变化的东西是多种多样的。", freqRank: 46 },
+    { en: "various", cn: "adj.各种各样的", phonetic: "/'veəriəs/", example: "vari(y)-变化,ous-的;变化的。", freqRank: 46 },
+    { en: "account", cn: "n.描述;账户;解释v.说明,解释;占有", phonetic: "/ə'kaʊnt/", example: "一再地(acc)数(count)你的账户。", freqRank: 45 },
+    { en: "charge", cn: "n.掌管;收费;指控v.充电;指控;收费", phonetic: "/tʃɑ:dʒ/", example: "别人要收你费时,你要掐紧(char-ge)口袋;一个差哥哥(charge),可能会被控告。", freqRank: 45 },
+    { en: "due", cn: "adj.到期的;应得的", phonetic: "/dju:/", example: "", freqRank: 45 },
+    { en: "flight", cn: "n.航班", phonetic: "/flaɪt/", example: "", freqRank: 45 },
+    { en: "pattern", cn: "n.模式", phonetic: "/'pætn/", example: "音似“拍疼”。被视为典范的人天天拍照,眼睛都“拍疼”了。", freqRank: 45 },
+    { en: "annoy", cn: "v.使苦恼,骚扰", phonetic: "/ə'nɔɪ/", example: "", freqRank: 44 },
+    { en: "adventure", cn: "n.冒险,奇遇", phonetic: "/əd'ventʃər/", example: "一个(a)弟弟(d)在玩车(ven-ture)很冒险。", freqRank: 44 },
+    { en: "digital", cn: "adj.数字的", phonetic: "/'dɪdʒɪtl/", example: "很多人在公车上“低着头(di-gi-tal)”玩数码产品。", freqRank: 44 },
+    { en: "eventually", cn: "adv.终于,最后", phonetic: "/ɪ'ventʃuəli/", example: "event大事- eventual形容词- eventually副词。大事总是最终发生。", freqRank: 44 },
+    { en: "nation", cn: "n.国家;民族", phonetic: "/'neɪʃn/", example: "谐音“内省”。一个国家内有很多省份。", freqRank: 44 },
+    { en: "operation", cn: "n.操作;经营;手术", phonetic: "/ˌɒpə'reɪʃn/", example: "operate运转,手术, tion名词后缀。", freqRank: 44 },
+    { en: "powerful", cn: "adj.强大的;强有力的", phonetic: "/'paʊəfl/", example: "", freqRank: 44 },
+    { en: "youth", cn: "n.青春;年轻人", phonetic: "/ju:θ/", example: "", freqRank: 44 },
+    { en: "curious", cn: "adj.好奇的;奇怪的", phonetic: "/'kjʊəriəs/", example: "cur跑;ious很。很喜欢跑来跑去,好奇的。", freqRank: 43 },
+    { en: "immediately", cn: "adv.立即", phonetic: "/ɪ'mi:diətli/", example: "im-向里,media媒体,-ate形容词后缀;一到媒体里面去,就会立刻被传开,宣传效果很直接。", freqRank: 43 },
+    { en: "campus", cn: "n.校园", phonetic: "/'kæmpəs/", example: "camp露营,us我们。我们(us)一直在的营地(camp),就是我们的大学校园(campus)。", freqRank: 43 },
+    { en: "distance", cn: "n.距离", phonetic: "/'dɪstəns/", example: "dis分开,散开。stance形近stand(站)。分开站就会产生距离。", freqRank: 43 },
+    { en: "failure", cn: "n.失败;故障", phonetic: "/'feɪljər/", example: "音译“飞了”,煮熟的鸭子飞了,就是失败。", freqRank: 43 },
+    { en: "feature", cn: "n.特征v.以......为特色", phonetic: "/'fi:tʃər/", example: "飞起(fea-tu)的阿姨(r-e)有特色(feature)。", freqRank: 43 },
+    { en: "gather", cn: "v.收集;聚集", phonetic: "/'gæðər/", example: "", freqRank: 43 },
+    { en: "otherwise", cn: "adv.否则;另外", phonetic: "/'ʌðəwaɪz/", example: "做事要想到别的(other)更明智(wise)的选择,否则(otherwise),可能会达不到目标。", freqRank: 43 },
+    { en: "request", cn: "n.请求;需要", phonetic: "/rɪ'kwest/", example: "一个阿姨(r-e)快死了(que-st),有临终的请求。", freqRank: 43 },
+    { en: "topic", cn: "n.话题;主题;标题", phonetic: "/'tɒpɪk/", example: "", freqRank: 43 },
+    { en: "equipment", cn: "n.装备", phonetic: "/ɪ'kwɪpmənt/", example: "一(e-)个盔(qui)甲批(p)上身,就是给自己装备(equip)好上战场了。", freqRank: 42 },
+    { en: "settle", cn: "v.解决;定居;安排好;停留", phonetic: "/'setl/", example: "", freqRank: 42 },
+    { en: "source", cn: "n.来源;水源;原始资料", phonetic: "/sɔ:s/", example: "", freqRank: 42 },
+    { en: "tradition", cn: "n.传统;惯例", phonetic: "/trə'dɪʃn/", example: "tra-传,是trans-的缩略;d-i-tion,可以想成“第一神”。从开天辟地的第一个神就传下来的东西,自然是我们的传统和惯例(tradition)。", freqRank: 42 },
+    { en: "specific", cn: "adj.明确的;特殊的n.详情,细节", phonetic: "/spə'sɪfɪk/", example: "", freqRank: 41 },
+    { en: "economic", cn: "adj.经济的;经济学的", phonetic: "/ˌi:kə'nɒmɪk;ˌekə'nɒmɪk/", example: "", freqRank: 41 },
+    { en: "extremely", cn: "adv.极其", phonetic: "/ɪk'stri:mli/", example: "", freqRank: 41 },
+    { en: "graduate", cn: "v.毕业", phonetic: "/'grædʒueɪt/", example: "gradu-逐渐,-ate动词、形容词。逐渐长大,就毕业了。", freqRank: 41 },
+    { en: "position", cn: "n.位置,方位;职位", phonetic: "/pə'zɪʃn/", example: "po警察,si坐,ti他,on在...上面。警察坐在他车上面的位置。", freqRank: 41 },
+    { en: "survive", cn: "v.活下来", phonetic: "/sə'vaɪv/", example: "sur表示“下往上”,从下往上捡回一条命(vive),活了下来。", freqRank: 41 },
+    { en: "unusual", cn: "adj.不平常的", phonetic: "/ʌn'ju:ʒuəl;ʌn'ju:ʒəl/", example: "不(un-)+寻常的(usual)。", freqRank: 41 },
+    { en: "upset", cn: "adj.心烦的;混乱的", phonetic: "/ʌp'set/", example: "", freqRank: 41 },
+    { en: "addition", cn: "n.增加;附加物", phonetic: "/ə'dɪʃn/", example: "", freqRank: 40 },
+    { en: "award", cn: "n.奖(品)v.授予", phonetic: "/ə'wɔ:d/", example: "一看到奖品(award)就很想大喊:“啊!我的!(a-war-d)\"", freqRank: 40 },
+    { en: "balance", cn: "n.平衡;余额v.使平衡", phonetic: "/'bæləns/", example: "大冬天的,爸爸(ba)走路抖来抖去的,因为冷死(lan-ce)了,保持不了平衡(balance)。", freqRank: 40 },
+    { en: "confused", cn: "adj.困惑的", phonetic: "/kən'fju:zd/", example: "谐音“孔夫子”。孔夫子的文章让老外看得很困惑。", freqRank: 40 },
+    { en: "disaster", cn: "n.不幸;灾难", phonetic: "/dɪ'zɑ:stər/", example: "dis分开,ast星星,er名词。星星裂开了,多大的灾难(disaster)。", freqRank: 40 },
+    { en: "exchange", cn: "n.交换;交流v.交换", phonetic: "/ɪks'tʃeɪndʒ/", example: "", freqRank: 40 },
+    { en: "personality", cn: "n.品格", phonetic: "/ˌpɜ:sə'næləti/", example: "", freqRank: 40 },
+    { en: "remove", cn: "v.移动,迁移", phonetic: "/rɪ'mu:v/", example: "一再(re)地移动(move)才能脱下一个东西。", freqRank: 40 },
+    { en: "thus", cn: "adv.这样;因而", phonetic: "/ðʌs/", example: "", freqRank: 40 },
+    { en: "transport", cn: "v.运输n.运输;交通工具", phonetic: "/'trænspɔ:t/", example: "从一个港口(port)转移(trans)另一个港口叫运输。", freqRank: 40 },
+    { en: "adapt", cn: "v.适应;改编", phonetic: "/ə'dæpt/", example: "", freqRank: 39 },
+    { en: "host", cn: "n.主人;主持人v.主持", phonetic: "/həʊst/", example: "主人、主持人都想hold住他(ho-st)的客人。", freqRank: 39 },
+    { en: "argument", cn: "n.争论;辩论;论据", phonetic: "/'ɑ:gjumənt/", example: "", freqRank: 39 },
+    { en: "collection", cn: "n.收集;收藏品", phonetic: "/kə'lekʃn/", example: "collect-收集,-ive很。很喜欢收集东西,是我们小时候集体的、共有的(collective)爱好。", freqRank: 39 },
+    { en: "jazz", cn: "n.爵士乐", phonetic: "/dʒæz/", example: "", freqRank: 39 },
+    { en: "limited", cn: "adj.有限的", phonetic: "/'lɪmɪtɪd/", example: "", freqRank: 39 },
+    { en: "movement", cn: "n.运动", phonetic: "/'mu:vmənt/", example: "move移动,-ment名词。它也表示政治、文化、艺术等领域的某运动,那都是为了把那个领域往前移动。", freqRank: 38 },
+    { en: "deliver", cn: "v.递送;交付", phonetic: "/dɪ'lɪvər/", example: "de地,li里,ver谐音挖。地里挖出的古董要交付给国家。", freqRank: 38 },
+    { en: "evidence", cn: "n.证据", phonetic: "/'evɪdəns/", example: "", freqRank: 38 },
+    { en: "exist", cn: "v.存在", phonetic: "/ɪg'zɪst/", example: "ex-往外,-ist人。外面世界的人,肯定是确实存在。", freqRank: 38 },
+    { en: "mental", cn: "adj.精神的;脑力的", phonetic: "/'mentl/", example: "men男人,tal塔里。男人们被关塔里,有了心理的疾病。", freqRank: 38 },
+    { en: "recycle", cn: "v.回收利用;使再循环;重新使用", phonetic: "/ˌri:'saɪkl/", example: "re前缀,表示又,再;cycle循环", freqRank: 38 },
+    { en: "scene", cn: "n.场面;情景;事件", phonetic: "/si:n/", example: "", freqRank: 38 },
+    { en: "spot", cn: "n.地点;污点v.玷污;认出", phonetic: "/spɒt/", example: "运动(sport)完衣服有很多污点(spot)。", freqRank: 38 },
+    { en: "struggle", cn: "v.斗争;挣扎", phonetic: "/'strʌgl/", example: "", freqRank: 38 },
+    { en: "throughout", cn: "prep.一直", phonetic: "/θru:'aʊt/", example: "", freqRank: 38 },
+    { en: "alarm", cn: "n.警报v.警告,使惊恐", phonetic: "/ə'lɑ:m/", example: "警报器(alarm)一响,大家都很惊恐,于是大喊“啊(a-)!”然后就拉(lar)着妈妈(-m)跑了。", freqRank: 37 },
+    { en: "belong", cn: "v.属于;应在(某处)", phonetic: "/bɪ'lɒŋ/", example: "属于(belong)我的东西就长久(long)是(be)我的东西。", freqRank: 37 },
+    { en: "destroy", cn: "v.破坏", phonetic: "/dɪ'strɔɪ/", example: "de夺去,损毁。stroy建造。损毁建造好的东西就是破坏。", freqRank: 37 },
+    { en: "detail", cn: "n.细节,详情", phonetic: "/'di:teɪl/", example: "de-底下,tail尾部。一个东西最下端的尾部,是它的细节和详情。", freqRank: 37 },
+    { en: "financial", cn: "adj.金融的", phonetic: "/faɪ'nænʃl;fə'nænʃl/", example: "", freqRank: 37 },
+    { en: "joy", cn: "n.欢乐", phonetic: "/dʒɔɪ/", example: "", freqRank: 37 },
+    { en: "pack", cn: "n.包装;一群;包裹v.包装", phonetic: "/pæk/", example: "", freqRank: 37 },
+    { en: "pretend", cn: "v.假装;伪装", phonetic: "/prɪ'tend/", example: "pre预先;tend倾向于。假动作,假装要有某种倾向。", freqRank: 37 },
+    { en: "suitable", cn: "adj.合适的", phonetic: "/'su:təbl;'sju:təbl/", example: "", freqRank: 37 },
+    { en: "access", cn: "n.入口,通道;(使用或见到的)机会,权利;v.进入;使用", phonetic: "/'ækses/", example: "一再地(acc)跑向(ce)思思(SS)就是接近他。", freqRank: 36 },
+    { en: "attempt", cn: "n.企图,试图v.尝试,企图", phonetic: "/ə'tempt/", example: "一再(att)地诱惑(tempt)别人,就是尝试要接近他。", freqRank: 36 },
+    { en: "emotion", cn: "n.情感,情绪", phonetic: "/ɪ'məʊʃn/", example: "往外(e)流动出来(motion)的就是你的情绪。", freqRank: 36 },
+    { en: "escape", cn: "v.逃避n.逃跑", phonetic: "/ɪ'skeɪp/", example: "es-表示“往外”。陪你一起往外(es)逃到(escape)天涯海角(cape)。", freqRank: 36 },
+    { en: "hunt", cn: "v.搜索;打猎", phonetic: "/hʌnt/", example: "", freqRank: 36 },
+    { en: "ruin", cn: "n.毁坏;废墟v.破坏", phonetic: "/'ru:ɪn/", example: "ru音:入,in在里面进入到敌人内部就可以把他们毁灭。", freqRank: 36 },
+    { en: "staff", cn: "n.全体职工", phonetic: "/stɑ:f/", example: "", freqRank: 36 },
+    { en: "target", cn: "n.目标,靶子v.对准;把......作为攻击目标", phonetic: "/'tɑ:gɪt/", example: "音似“他给的”,所以要把他当做目标。", freqRank: 36 },
+    { en: "teenager", cn: "n.青少年", phonetic: "/'ti:neɪdʒər/", example: "t提;ee两只鹅;na那;ge个;r人。提着两只鹅的那个人是青少年。", freqRank: 36 },
+    { en: "tip", cn: "n.小窍门;小费v.给小费", phonetic: "/tɪp/", example: "", freqRank: 36 },
+    { en: "aside", cn: "adv.在旁边", phonetic: "/ə'saɪd/", example: "", freqRank: 35 },
+    { en: "complain", cn: "v.抱怨,控诉", phonetic: "/kəm'pleɪn/", example: "在一起的两个人都(com-)很平凡(plain)的话,这一辈子就有得抱怨(complain)了。", freqRank: 35 },
+    { en: "crowd", cn: "n.人群v.拥挤", phonetic: "/kraʊd/", example: "人群排成好几队(row)。", freqRank: 35 },
+    { en: "manner", cn: "n.方式;习惯;规矩;风俗", phonetic: "/'mænər/", example: "人(man)呢(ner)要注意礼貌。", freqRank: 35 },
+    { en: "particular", cn: "adj.特别的", phonetic: "/pə'tɪkjələr/", example: "在一个派对(par-ti)上所有人都哭啦(cu-lar),这个派对真特别。", freqRank: 35 },
+    { en: "respond", cn: "v.回答;作出反应", phonetic: "/rɪ'spɒnd/", example: "", freqRank: 35 },
+    { en: "willing", cn: "adj.乐意的", phonetic: "/'wɪlɪŋ/", example: "", freqRank: 35 },
+    { en: "achievement", cn: "n.成就;完成", phonetic: "/ə'tʃi:vmənt/", example: "", freqRank: 34 },
+    { en: "anxious", cn: "adj.渴望的;忧虑的", phonetic: "/'æŋkʃəs/", example: "", freqRank: 34 },
+    { en: "comment", cn: "n.评论,意见v.发表评论,发表意见", phonetic: "/'kɒment/", example: "抠门(com-men)的他(t)经常被别人评论、批评。", freqRank: 34 },
+    { en: "disappear", cn: "v.不见,消失", phonetic: "/ˌdɪsə'pɪər/", example: "dis-否定,appear出现。一直不出现,就消失、失踪了。", freqRank: 34 },
+    { en: "goods", cn: "n.商品;货物", phonetic: "/gʊdz/", example: "质量好的(good)许多东西(s联想复数)才能称为商品。", freqRank: 34 },
+    { en: "resource", cn: "n.资源", phonetic: "/rɪ'sɔ:s;rɪ'zɔ:s/", example: "", freqRank: 34 },
+    { en: "select", cn: "v.挑选;选拔", phonetic: "/sɪ'lekt/", example: "", freqRank: 34 },
+    { en: "familiar", cn: "adj.熟悉的", phonetic: "/fə'mɪliə(r)/", example: "famil-家庭,-iar形容词。家人都是很熟悉的、很常见的。", freqRank: 33 },
+    { en: "partner", cn: "n.伙伴", phonetic: "/'pɑ:tnər/", example: "音似:怕他难,怕他一个人做太难,所以找个伙伴一起做。", freqRank: 33 },
+    { en: "senior", cn: "n.中学生;较......年长的人adj.级别(或地位)高的;成人的", phonetic: "/'si:niər/", example: "", freqRank: 33 },
+    { en: "agriculture", cn: "n.农业", phonetic: "/'ægrɪkʌltʃər/", example: "阿哥(ag)在日(ri)头底下研究的文化(culture),肯定是农业(agriculture)。", freqRank: 32 },
+    { en: "aware", cn: "adj.意识到的,知道的", phonetic: "/ə'weər/", example: "一个(a)哇(wa)了一声的阿姨(r-e),一定是有意识的(aware)。", freqRank: 32 },
+    { en: "beauty", cn: "n.美,美人", phonetic: "/'bju:ti/", example: "", freqRank: 32 },
+    { en: "confident", cn: "adj.自信的,有把握的", phonetic: "/'kɒnfɪdənt/", example: "con-共同;fid-信任;ent形容词。其他人共同信任你,让你更加自信、有把握。", freqRank: 32 },
+    { en: "fee", cn: "n.费用", phonetic: "/fi:/", example: "音似“费”,费用。", freqRank: 32 },
+    { en: "image", cn: "n.形象", phonetic: "/'ɪmɪdʒ/", example: "im-我,-age年龄。我在每一个年龄都有不同的形象。", freqRank: 32 },
+    { en: "indicate", cn: "v.指示,表明", phonetic: "/'ɪndɪkeɪt/", example: "in-里面,dic-说(“听写”叫做dictation),-ate动词。里面说的话,就是在表明观点。", freqRank: 32 },
+    { en: "obviously", cn: "adv.明显地", phonetic: "/'ɒbviəsli/", example: "", freqRank: 32 },
+    { en: "judge", cn: "n.法官;裁判员v.审判;判断", phonetic: "/dʒʌdʒ/", example: "法官总是夹着(ju-dge)一叠材料,裁判总是很有架子(ju-dge)。", freqRank: 31 },
+    { en: "aid", cn: "v.帮助,援助n.帮助;助手", phonetic: "/eɪd/", example: "我们都应该给彼此爱的(ai-d)帮助(aid)。", freqRank: 31 },
+    { en: "amazing", cn: "adj.令人惊叹的", phonetic: "/ə'meɪzɪŋ/", example: "", freqRank: 31 },
+    { en: "destination", cn: "n.目的地", phonetic: "/ˌdestɪ'neɪʃn/", example: "命(desti-)中注定要去的国家(nation)就是你的目的地(destination)。", freqRank: 31 },
+    { en: "income", cn: "n.收入", phonetic: "/'ɪnkʌm;'ɪnkəm/", example: "进到你口袋的钱,就是income。", freqRank: 31 },
+    { en: "indeed", cn: "adv.的确", phonetic: "/ɪn'di:d/", example: "", freqRank: 31 },
+    { en: "musical", cn: "n.音乐片adj.音乐的;悦耳的", phonetic: "/'mju:zɪkl/", example: "mus-牧师ic-IC卡al-阿里巴巴:牧师发明了有音乐的IC卡送给阿里巴巴。", freqRank: 31 },
+    { en: "normal", cn: "adj.正常的n.正常;标准;常态", phonetic: "/'nɔ:ml/", example: "", freqRank: 31 },
+    { en: "piano", cn: "n.钢琴", phonetic: "/pi'ænəʊ/", example: "", freqRank: 31 },
+    { en: "series", cn: "n.一系列;连续;(广播或电视上题材或角色相同的)系列节目", phonetic: "/'sɪəri:z/", example: "", freqRank: 31 },
+    { en: "symbol", cn: "n.象征;符号", phonetic: "/'sɪmbl/", example: "sym-像;-bol球形,ball的变化体。像球一样的图形,就是符号、标志、象征。", freqRank: 30 },
+    { en: "branch", cn: "n.分支;树枝", phonetic: "/brɑ:ntʃ/", example: "驰(-ch)名的品牌(bran-)都有分支(branch)。", freqRank: 30 },
+    { en: "duty", cn: "n.职责", phonetic: "/'dju:ti/", example: "", freqRank: 30 },
+    { en: "identity", cn: "n.身份", phonetic: "/aɪ'dentəti/", example: "我(i)的牙齿(dent-)使得(-ify)我是可以被识别的。", freqRank: 30 },
+    { en: "limit", cn: "v.限制n.限制;限度", phonetic: "/'lɪmɪt/", example: "", freqRank: 30 },
+    { en: "opera", cn: "n.歌剧;歌剧院", phonetic: "/'ɒprə/", example: "", freqRank: 30 },
+    { en: "previous", cn: "adj.以前的", phonetic: "/'pri:viəs/", example: "", freqRank: 30 },
+    { en: "profit", cn: "n.利润;利益", phonetic: "/'prɒfɪt/", example: "前面合适(fit)的东西,有钱赚。", freqRank: 30 },
+    { en: "represent", cn: "v.代表;表现;描绘", phonetic: "/ˌreprɪ'zent/", example: "re-一再地;present陈述,出席。一再地出席,一再地陈述,代表了一个团队。", freqRank: 30 },
+    { en: "satisfaction", cn: "n.满意", phonetic: "/ˌsætɪs'fækʃn/", example: "sat-满,is是,-fy使;使它是满的,就满足(satisfy)了它。tion是名词后缀。", freqRank: 30 },
+    { en: "cure", cn: "v.治愈,治疗n.疗法;对策", phonetic: "/kjʊər/", example: "cur-跑,e-往外。很多病都是不运动导致的,多往外跑就可医治好了。", freqRank: 29 },
+    { en: "honey", cn: "n.蜂蜜", phonetic: "/'hʌni/", example: "", freqRank: 29 },
+    { en: "nearby", cn: "adj.附近的,邻近的", phonetic: "/ˌnɪə'baɪ/", example: "", freqRank: 29 },
+    { en: "remind", cn: "v.提醒;使想起", phonetic: "/rɪ'maɪnd/", example: "", freqRank: 29 },
+    { en: "shelter", cn: "n.掩蔽;隐蔽处v.掩蔽", phonetic: "/'ʃeltər/", example: "shel-壳(来自shell),-ter特;特别的壳有时候也可以当成避难所(shelter),比如乌龟、蜗牛的壳。", freqRank: 29 },
+    { en: "stage", cn: "n.舞台;阶段", phonetic: "/steɪdʒ/", example: "", freqRank: 29 },
+    { en: "suit", cn: "v.适合n.一套", phonetic: "/su:t;sju:t/", example: "", freqRank: 29 },
+    { en: "cheat", cn: "v.欺骗;作弊n.欺骗,骗子", phonetic: "/tʃi:t/", example: "这个词前后都是吃(ch-eat),所以可以表示偷吃等一系列的欺骗行为。", freqRank: 28 },
+    { en: "principle", cn: "n.原则;道义;本义", phonetic: "/'prɪnsəpl/", example: "王子(prin-,prince的简化)喜(ci-)欢吃苹果(-ple),因为他掌握了健康的原则(principle)。", freqRank: 28 },
+    { en: "disappointed", cn: "adj.失望的", phonetic: "/ˌdɪsə'pɔɪntɪd/", example: "", freqRank: 28 },
+    { en: "flat", cn: "adj.平坦的;浅的n.公寓", phonetic: "/flæt/", example: "", freqRank: 28 },
+    { en: "grateful", cn: "adj.感谢的", phonetic: "/'greɪtfl/", example: "官人(g-r)吃(ate)得很饱(ful),所以他心存感激(grateful)。", freqRank: 28 },
+    { en: "master", cn: "v.精通;控制n.有技能的人;硕士", phonetic: "/'mɑ:stər/", example: "硕士有时会被导师骂死,才掌握了更多知识、精通一个专业。", freqRank: 28 },
+    { en: "monitor", cn: "n.监视器;班长", phonetic: "/'mɒnɪtər/", example: "模拟(moni-)考试特(-tor)别需要装一个monitor。", freqRank: 28 },
+    { en: "network", cn: "n.网络", phonetic: "/'netwɜ:k/", example: "", freqRank: 28 },
+    { en: "original", cn: "adj.原始的n.原件", phonetic: "/ə'rɪdʒənl/", example: "中国第一个革命政权起源于哪里?哦(o),瑞金(rigin)是红色政权的发源地! original是origin的形容词", freqRank: 28 },
+    { en: "preserve", cn: "v.保存;保护;维持", phonetic: "/prɪ'zɜ:v/", example: "pre-预先,serve保存。预先就把一个东西保存好,就是在保护它、保存它。", freqRank: 28 },
+    { en: "professional", cn: "adj.专业的;职业的", phonetic: "/prə'feʃənl/", example: "", freqRank: 28 },
+    { en: "reflect", cn: "v.反映;反射;反思", phonetic: "/rɪ'flekt/", example: "re-往回,flect折回。光线折回来,是反射。做一件事会折回来,说明反省、沉思了自己。", freqRank: 28 },
+    { en: "relief", cn: "n.减轻;安慰", phonetic: "/rɪ'li:f/", example: "阿姨(r-e)看到了礼物(lie-ve),缓解了工作的劳累。relief是relieve的名词,ve-结尾的动词往往会衍变出f结尾的名词,因为发音类似。", freqRank: 28 },
+    { en: "significant", cn: "adj.重要的;有意义的", phonetic: "/sɪg'nɪfɪkənt/", example: "sign-标志。一个东西是另外一个东西的标志,自然很重要。重要的东西有大量的意义。", freqRank: 28 },
+    { en: "bar", cn: "n.酒吧", phonetic: "/bɑ:r/", example: "", freqRank: 27 },
+    { en: "belief", cn: "n.信念,信仰", phonetic: "/bɪ'li:f/", example: "", freqRank: 27 },
+    { en: "chain", cn: "n.链;一连串", phonetic: "/tʃeɪn/", example: "链条(chain)都是一节插(cha)在另一节里面(in)的。", freqRank: 27 },
+    { en: "confirm", cn: "v.证实;确认", phonetic: "/kən'fɜ:m/", example: "大家(con)对一个事情的态度都很坚定(firm),说明这个事情得到大家的确认和证实。", freqRank: 27 },
+    { en: "debate", cn: "v.辩论n.辩论", phonetic: "/dɪ'beɪt/", example: "为了一件事在底下(de)打得(bate)不可开交,是在激烈地争论。", freqRank: 27 },
+    { en: "despite", cn: "prep.即使,尽管", phonetic: "/dɪ'spaɪt/", example: "", freqRank: 27 },
+    { en: "fur", cn: "n.毛皮", phonetic: "/fɜ:r/", example: "", freqRank: 27 },
+    { en: "impress", cn: "v.给......以深刻印象", phonetic: "/ɪm'pres/", example: "im-往里,press压。在大家心中压出的感觉,就是你留给别人的印象。", freqRank: 27 },
+    { en: "intelligent", cn: "adj.聪明的", phonetic: "/ɪn'telɪdʒənt/", example: "", freqRank: 27 },
+    { en: "measure", cn: "v.测量n.测量;措施", phonetic: "/'meʒər/", example: "有了合适的方法和措施(measure),我一个(me-a)人就能确定(sure)一个东西的尺度,衡量一个问题的程度。", freqRank: 27 },
+    { en: "occur", cn: "v.发生;出现;存在", phonetic: "/ə'kɜ:r/", example: "occ一再地;cur跑。一再地跑,总会发生些事。", freqRank: 27 },
+    { en: "quit", cn: "v.离开;放弃", phonetic: "/kwɪt/", example: "", freqRank: 27 },
+    { en: "response", cn: "n.响应;反应;回答", phonetic: "/rɪ'spɒns/", example: "", freqRank: 27 },
+    { en: "credit", cn: "n.信用,信贷;学分", phonetic: "/'kredɪt/", example: "可(c)让阿姨(r-e)递给他(di-t)阿姨的财产,说明他是有信用、赢得了阿姨的信任(credit)的。", freqRank: 26 },
+    { en: "apart", cn: "adv.分离;相距adj.分离的", phonetic: "/ə'pɑ:t/", example: "只剩下一个(a)部分(part)了,说明原来在一起的几个部分分开了、彼此有距离了。", freqRank: 26 },
+    { en: "character", cn: "n.字符;个性;角色", phonetic: "/'kærəktər/", example: "char-拼写似“插入”,-acter演员(似actor);戏里要插入一个演员,一定是他的性格很适合某个角色(character)。", freqRank: 26 },
+    { en: "chat", cn: "v.聊天,闲谈;n.聊天,闲谈", phonetic: "/tʃæt/", example: "喝杯茶(cha),谈(-t)一谈(chat)。", freqRank: 26 },
+    { en: "determine", cn: "v.(使)下决心", phonetic: "/dɪ'tɜ:mɪn/", example: "心底(de)想给一个东西画上期限(term),就是决定、决心做一件事了。", freqRank: 26 },
+    { en: "electricity", cn: "n.电,电流", phonetic: "/ɪˌlek'trɪsəti/", example: "夏天依赖(e-le)电可(c)以吹(tri)凉我们的城市(city)。", freqRank: 26 },
+    { en: "insect", cn: "n.昆虫", phonetic: "/'ɪnsekt/", example: "", freqRank: 26 },
+    { en: "mirror", cn: "n.镜子", phonetic: "/'mɪrər/", example: "", freqRank: 26 },
+    { en: "native", cn: "adj.土著的;天然的;与生俱来的", phonetic: "/'neɪtɪv/", example: "", freqRank: 26 },
+    { en: "recover", cn: "v.恢复;弥补;重新获得", phonetic: "/rɪ'kʌvər/", example: "阿姨(r-e)盖着(cover)被子,为了恢复健康,重新获得好身体。", freqRank: 26 },
+    { en: "rescue", cn: "v.营救,援救", phonetic: "/'reskju:/", example: "", freqRank: 26 },
+    { en: "former", cn: "adj.从前的", phonetic: "/'fɔ:mər/", example: "form-形成,-er人;形式主义是以前的人常犯的错误。", freqRank: 25 },
+    { en: "architect", cn: "n.建筑师", phonetic: "/'ɑ:kɪtekt/", example: "", freqRank: 25 },
+    { en: "astronaut", cn: "n.宇航员", phonetic: "/'æstrənɔ:t/", example: "a(一只);stron-strong(强壮);aut~ant(蚂蚁),一只强壮的蚂蚁当了宇航员。", freqRank: 25 },
+    { en: "basis", cn: "n.基础;底部;基本原则或原理", phonetic: "/'beɪsɪs/", example: "", freqRank: 25 },
+    { en: "convenient", cn: "adj.方便的", phonetic: "/kən'vi:niənt/", example: "大家(con)都能走(ven)到那个地方去,证明那里的位置是非常方便的(convenient)。", freqRank: 25 },
+    { en: "current", cn: "adj.现在的n.趋势;电流;水流", phonetic: "/'kʌrənt/", example: "", freqRank: 25 },
+    { en: "gallery", cn: "n.画廊", phonetic: "/'gæləri/", example: "音似“伽利略”,-ery地方;伽利略的肖像被挂在了画廊(gallery)里。", freqRank: 25 },
+    { en: "generous", cn: "adj.慷慨的", phonetic: "/'dʒenərəs/", example: "", freqRank: 25 },
+    { en: "greet", cn: "v.欢迎", phonetic: "/gri:t/", example: "", freqRank: 25 },
+    { en: "impact", cn: "n.效果;影响v.对......产生影响", phonetic: "/'ɪmpækt/", example: "", freqRank: 25 },
+    { en: "impression", cn: "n.印象", phonetic: "/ɪm'preʃn/", example: "im-往里,press压。在大家心中压出的感觉,就是你留给别人的印象。tion表示名词后缀。", freqRank: 25 },
+    { en: "permit", cn: "n.许可证;执照v.许可;允许", phonetic: "/pə'mɪt/", example: "全心全意(per)想考MIT(麻省理工),总会被允许(permit)的。", freqRank: 25 },
+    { en: "reserve", cn: "v.预订(座位等);储备n.储备(量);自然保护区", phonetic: "/rɪ'zɜ:v/", example: "re-往回,serve留。把一个东西往回留住,就是储存、储备;帮某人留住一个东西,因为他预订了。储备下来的东西就是你的储备物、人、钱。", freqRank: 25 },
+    { en: "sharp", cn: "adj.锋利的", phonetic: "/ʃɑ:p/", example: "", freqRank: 25 },
+    { en: "agency", cn: "n.代理,代理处;政府机构", phonetic: "/'eɪdʒənsi/", example: "", freqRank: 24 },
+    { en: "content", cn: "n.内容;目录;含量;adj.满意的", phonetic: "/'kɒntent; kən'tent/", example: "", freqRank: 24 },
+    { en: "entrance", cn: "n.入口", phonetic: "/'entrəns/", example: "entr(=enter内);ance(名词后缀)入内的地方叫入口。", freqRank: 24 },
+    { en: "independent", cn: "adj.独立的", phonetic: "/ˌɪndɪ'pendənt/", example: "in否定,dependent依赖的。不用依赖别人,就很独立自主。", freqRank: 24 },
+    { en: "rent", cn: "n.租金v.出租;租用", phonetic: "/rent/", example: "房主要认同(ren-t)租户,才会把房子租(rent)给他。", freqRank: 24 },
+    { en: "replace", cn: "v.取代;把......放回原处", phonetic: "/rɪ'pleɪs/", example: "re重新。重新place放一个东西,代替旧的那个。", freqRank: 24 },
+    { en: "church", cn: "n.教堂", phonetic: "/tʃɜ:tʃ/", example: "chu(除了);r(花草);ch(长椅)除了花草之外就剩下长椅的地方非教堂莫属。", freqRank: 23 },
+    { en: "creature", cn: "n.生物", phonetic: "/'kri:tʃər/", example: "crea-create(创造);ture-true(真的)创造出真的生物。", freqRank: 23 },
+    { en: "contribution", cn: "n.贡献,投稿", phonetic: "/ˌkɒntrɪ'bju:ʃn/", example: "contribute“v.贡献”,tion名词后缀,contribution\"n.贡献\"。", freqRank: 23 },
+    { en: "forever", cn: "adv.永远", phonetic: "/fər'evər/", example: "", freqRank: 23 },
+    { en: "mass", cn: "n.块,团;群众;大量", phonetic: "/mæs/", example: "骂(ma)思思(ss)的人蛮多(mass)的。", freqRank: 23 },
+    { en: "onto", cn: "prep.向,朝,在.......之上", phonetic: "/'ɒntə;'ɒntu/", example: "", freqRank: 23 },
+    { en: "press", cn: "v.压;n.报刊杂志;印刷机;出版社", phonetic: "/pres/", example: "", freqRank: 23 },
+    { en: "rude", cn: "adj.粗鲁的;无礼的", phonetic: "/ru:d/", example: "", freqRank: 23 },
+    { en: "typical", cn: "adj.典型的", phonetic: "/'tɪpɪkl/", example: "type类型,cal形容词后缀,typical典型的。", freqRank: 23 },
+    { en: "tomb", cn: "n.墓碑", phonetic: "/tu:m/", example: "音似“土墓”。", freqRank: 22 },
+    { en: "cheese", cn: "n.奶酪", phonetic: "/tʃi:z/", example: "", freqRank: 22 },
+    { en: "emergency", cn: "n.紧急情况", phonetic: "/ɪ'mɜ:dʒənsi/", example: "", freqRank: 22 },
+    { en: "ensure", cn: "v.确保", phonetic: "/ɪn'ʃʊər;ɪn'ʃɔ:r/", example: "en-前缀“使”,sure真确,使正确就是确保。", freqRank: 22 },
+    { en: "flood", cn: "v.涌出n.洪水", phonetic: "/flʌd/", example: "f-“覆”,loo-100,d-“地”,覆盖了一百亩地,发了洪水(flood)。", freqRank: 22 },
+    { en: "gap", cn: "n.缺口;间隙v.裂开,形成缺口", phonetic: "/gæp/", example: "", freqRank: 22 },
+    { en: "injure", cn: "v.伤害", phonetic: "/'ɪndʒər/", example: "硬(in)揪(ju)着阿姨(r-e),会伤害(injure)她的。", freqRank: 22 },
+    { en: "medal", cn: "n.勋章;纪念章", phonetic: "/'medl/", example: "我(me)家里都(dal)是奖章。", freqRank: 22 },
+    { en: "metal", cn: "n.金属;合金adj.金属制的", phonetic: "/'metl/", example: "谐音“霉头”。金属被偷了,触了霉头。", freqRank: 22 },
+    { en: "narrow", cn: "adj.狭窄的", phonetic: "/'nærəʊ/", example: "nar拼音:那人,row排,那人坐在狭窄的那一排。", freqRank: 22 },
+    { en: "origin", cn: "n.起源;开端", phonetic: "/'ɒrɪdʒɪn/", example: "or或许,igin音似已经,或许很多人已经知道事情的来源。", freqRank: 22 },
+    { en: "pole", cn: "n.杆;极点;电极", phonetic: "/pəʊl/", example: "地球要是破了(po-le),一定是从两极开始的,因为这里最不稳定。", freqRank: 22 },
+    { en: "reaction", cn: "n.反应,感应;反作用", phonetic: "/rɪ'ækʃn/", example: "react动词反应,tion名词后缀,reaction名词反应。", freqRank: 22 },
+    { en: "studio", cn: "n.演播室", phonetic: "/'stju:diəʊ/", example: "stud-study学习,i蜡烛,o洞,在工作室的蜡烛洞边学习。", freqRank: 22 },
+    { en: "assume", cn: "v.假定,设想;承担", phonetic: "/ə'sju:m/", example: "a+双写表示一再地;sume表示拿。一再地拿起来,说明你承担不了这件事。", freqRank: 21 },
+    { en: "ceremony", cn: "n.典礼,仪式", phonetic: "/'serəməni/", example: "邀请别人来参加你的仪式就是为了让他塞给你(ce-re)一些红包(mony,像money)。", freqRank: 21 },
+    { en: "classic", cn: "adj.传统的,古典的", phonetic: "/'klæsɪk/", example: "class班,icIC卡,班里同学刷IC卡看古典名著。", freqRank: 21 },
+    { en: "dolphin", cn: "n.海豚", phonetic: "/'dɒlfɪn/", example: "do都,lph脸皮厚,in里面,里面的海豚都脸皮厚。", freqRank: 21 },
+    { en: "flexible", cn: "adj.灵活的", phonetic: "/'fleksəbl/", example: "flex是折,弯;ible能够。能够把自己对折、弯曲,是很灵活的、柔韧的。", freqRank: 21 },
+    { en: "fund", cn: "n.基金v.投资,资助", phonetic: "/fʌnd/", example: "", freqRank: 21 },
+    { en: "guy", cn: "n.家伙v.嘲弄,取笑", phonetic: "/gaɪ/", example: "", freqRank: 21 },
+    { en: "harm", cn: "v.伤害,损害n.伤害,危害", phonetic: "/hɑ:m/", example: "h-he他,arm手臂,他的手臂受到了危害。", freqRank: 21 },
+    { en: "length", cn: "n.长度", phonetic: "/leŋkθ/", example: "long长的,th名词后缀,变o为e,加名词后缀,length长度。", freqRank: 21 },
+    { en: "ordinary", cn: "adj.普通的;平常的", phonetic: "/'ɔ:dnri/", example: "ordin顺序(来自order),ary表示形容词,按照顺序来做事的人就是普通的、平常的。", freqRank: 21 },
+    { en: "site", cn: "n.地点", phonetic: "/saɪt/", example: "", freqRank: 21 },
+    { en: "attach", cn: "v.贴上,系上;使附属", phonetic: "/ə'tætʃ/", example: "a,ta是他,ch是吃。一再地跟他吃饭,依附于他。", freqRank: 20 },
+    { en: "battle", cn: "n.战役v.战斗", phonetic: "/'bætl/", example: "", freqRank: 20 },
+    { en: "commercial", cn: "adj.商业的", phonetic: "/kə'mɜ:ʃl/", example: "commerce(n.商业)的形容词形式,谐音:靠摩丝,商业社交时靠摩丝让自己精神点。", freqRank: 20 },
+    { en: "dare", cn: "v.敢", phonetic: "/deər/", example: "形似“打(da-)阿姨(r-e)”。阿姨(re)你都敢打(da),真是胆大。", freqRank: 20 },
+    { en: "decorate", cn: "v.装饰,布置", phonetic: "/'dekəreɪt/", example: "deco-音似“带壳”;做装饰就是给房子带一层壳。", freqRank: 20 },
+    { en: "editor", cn: "n.编者", phonetic: "/'edɪtər/", example: "edit编辑,or人,editor编者。", freqRank: 20 },
+    { en: "frightened", cn: "adj.害怕的", phonetic: "/'fraɪtnd/", example: "frighten恐吓,ed形容词后缀,frightened害怕的。", freqRank: 20 },
+    { en: "register", cn: "n.登记表;登记员v.登记", phonetic: "/'redʒɪstər/", example: "", freqRank: 20 },
+    { en: "resident", cn: "n.居民adj.居住的;定居的", phonetic: "/'rezɪdənt/", example: "", freqRank: 20 },
+    { en: "scare", cn: "v.(使)害怕;受惊吓;吓跑", phonetic: "/skeər/", example: "", freqRank: 20 },
+    { en: "stream", cn: "n.小河", phonetic: "/stri:m/", example: "st沙滩,ream-dream梦,沙滩上做梦,梦见小溪。", freqRank: 20 },
+    { en: "super", cn: "adj.极好的", phonetic: "/'su:pər;'sju:pər/", example: "", freqRank: 20 },
+    { en: "trap", cn: "n.陷阱v.使陷入困境", phonetic: "/træp/", example: "陷阱就是一踹(tra)到就扑(p)下去了的东西。", freqRank: 20 },
+    { en: "wine", cn: "n.酒", phonetic: "/waɪn/", example: "葡萄酒喝多了也会东倒西歪(wine)的。", freqRank: 20 },
+    { en: "injury", cn: "n.伤害", phonetic: "/'ɪndʒəri/", example: "很阴(in)的陪审团(jury)就会伤害别人。", freqRank: 19 },
+    { en: "observe", cn: "v.观察;遵守;注意到", phonetic: "/əb'zɜ:v/", example: "偶不(ob-)服务(serve),说明我是老板,只是在这里观察(ob-serve)服务员的表现的。", freqRank: 19 },
+    { en: "patience", cn: "n.耐心", phonetic: "/'peɪʃns/", example: "", freqRank: 19 },
+    { en: "comparison", cn: "n.比较,对照", phonetic: "/kəm'pærɪsn/", example: "", freqRank: 19 },
+    { en: "compete", cn: "v.竞争;比赛", phonetic: "/kəm'pi:t/", example: "com一起,pete寻求,一起寻求相同的东西,所以要竞争。", freqRank: 19 },
+    { en: "concentrate", cn: "v.集中,专心", phonetic: "/'kɒnsntreɪt/", example: "con共同,centr中间,ate动词。大家都到中间来,叫做集中。", freqRank: 19 },
+    { en: "eager", cn: "adj.热切的", phonetic: "/'i:gər/", example: "谐音“一哥”,很多艺人都渴望成为一哥(ea-ger)。", freqRank: 19 },
+    { en: "item", cn: "n.物品;条款", phonetic: "/'aɪtəm/", example: "条款就是爱(i)折腾(tem),经常很复杂。", freqRank: 19 },
+    { en: "pleased", cn: "adj.高兴的;乐意做某事的", phonetic: "/pli:zd/", example: "please请,d弟弟,他高兴地请他弟弟吃东西。", freqRank: 19 },
+    { en: "pot", cn: "n.壶;盆;罐", phonetic: "/pɒt/", example: "po破,t他,我打破了他的罐子。", freqRank: 19 },
+    { en: "puzzle", cn: "n.谜,智力游戏", phonetic: "/'pʌzl/", example: "音似“怕走(pu-zzle)”。前面有好几条路,很怕走,真是个难题,迷惑(puzzle)了我。", freqRank: 19 },
+    { en: "threat", cn: "n.威胁", phonetic: "/θret/", example: "throw+eat=threat。大人威胁小孩子的时候经常说: 你不听话,我就扔掉(thr-)你吃的东西(eat)哦!", freqRank: 19 },
+    { en: "sheet", cn: "n.成幅的薄片;薄板;床单;一张(纸)", phonetic: "/ʃi:t/", example: "she她,et外星人,她的被单上画着ET外星人。", freqRank: 18 },
+    { en: "architecture", cn: "n.建筑,建筑学", phonetic: "/'ɑ:kɪtektʃər/", example: "arch拱形,tect表示盖上。如何用拱形(arch)盖出(tect)你阿姨(u-r-e)家,叫做建筑。", freqRank: 18 },
+    { en: "construction", cn: "n.建设,建筑物;结构", phonetic: "/kən'strʌkʃn/", example: "con(一起);struct(建造;原意“重叠”);ion(名词后缀),把砖头重叠在一起就是建设。", freqRank: 18 },
+    { en: "envelope", cn: "n.信封", phonetic: "/'envələʊp;'ɒnvələʊp/", example: "", freqRank: 18 },
+    { en: "facility", cn: "n.设施", phonetic: "/fə'sɪləti/", example: "", freqRank: 18 },
+    { en: "female", cn: "adj.女性的;雌性的n.女性;雌性动物", phonetic: "/'fi:meɪl/", example: "非(fe)男性(male),就是女性。", freqRank: 18 },
+    { en: "float", cn: "v.漂浮", phonetic: "/fləʊt/", example: "flo流,at在。在水上流动就是漂浮,在风中流是飘动;在人群中流动是散播。", freqRank: 18 },
+    { en: "gas", cn: "n.气体;汽油", phonetic: "/gæs/", example: "", freqRank: 18 },
+    { en: "intention", cn: "n.意图", phonetic: "/ɪn'tenʃn/", example: "in进来,tent帐篷,ion名词。半夜进你帐篷的人,肯定别有目的。", freqRank: 18 },
+    { en: "moreover", cn: "adv.而且;此外", phonetic: "/mɔ:r'əʊvər/", example: "", freqRank: 18 },
+    { en: "occasion", cn: "n.时机;场合", phonetic: "/ə'keɪʒn/", example: "谐音“OK人”。说话会看场合、抓时机的人是个很OK的人。", freqRank: 18 },
+    { en: "responsible", cn: "adj.负责的;有责任的", phonetic: "/rɪ'spɒnsəbl/", example: "re(回);spons(答复);ible(表示“能够”的形容词后缀),能够回答事情结果的,当然是负责的。", freqRank: 18 },
+    { en: "retire", cn: "v.退休", phonetic: "/rɪ'taɪər/", example: "阿姨(r-e)累了(tire),就退休(retire)。", freqRank: 18 },
+    { en: "somehow", cn: "adv.由于某种原因", phonetic: "/'sʌmhaʊ/", example: "some有些,how怎样,由于某种原因,不知道有些人怎样想的。", freqRank: 18 },
+    { en: "wisdom", cn: "n.智慧", phonetic: "/'wɪzdəm/", example: "wise睿智的,dom名词后缀,wise去e加dom,构成 wisdom智慧。", freqRank: 18 },
+    { en: "faith", cn: "n.信心;信任;信仰", phonetic: "/feɪθ/", example: "君要臣死,臣非死(fai-th)不可。这是一种信仰(faith)。", freqRank: 17 },
+    { en: "harvest", cn: "n.收获v.收割", phonetic: "/'hɑ:vɪst/", example: "前面的harv似哈佛;est最。考上哈佛,最(很)有收获。", freqRank: 17 },
+    { en: "athlete", cn: "n.运动员", phonetic: "/'æθli:t/", example: "", freqRank: 17 },
+    { en: "contrast", cn: "n.对比v.对照", phonetic: "/'kɒntrɑ:st/", example: "contra相反,st首字母“使他”。因为相反,使他有差异、有对比。", freqRank: 17 },
+    { en: "court", cn: "n.法庭;庭院", phonetic: "/kɔ:t/", example: "谐音“拷他”(cour-t)。法庭就是拷问他的地方。", freqRank: 17 },
+    { en: "document", cn: "n.文件", phonetic: "/'dɒkjumənt/", example: "谐音“多苦闷他(do-cu-men-t)”。这么多记载文件真是苦闷了他。", freqRank: 17 },
+    { en: "enable", cn: "v.使能够", phonetic: "/ɪ'neɪbl/", example: "使(en)得一个人能够(able)做某事。", freqRank: 17 },
+    { en: "equal", cn: "adj.相等的;平等的v.与......相等或相同", phonetic: "/'i:kwəl/", example: "equ:移去al-all:所有,移去所有人的头衔,就平等了。", freqRank: 17 },
+    { en: "hesitate", cn: "v.犹豫", phonetic: "/'hezɪteɪt/", example: "他(he)坐(sit)在那儿吃(ate)东西,一副犹豫(hesitate)的样子。", freqRank: 17 },
+    { en: "marriage", cn: "n.结婚;婚姻生活", phonetic: "/'mærɪdʒ/", example: "", freqRank: 17 },
+    { en: "option", cn: "n.选项;选择权", phonetic: "/'ɒpʃn/", example: "动词opt的名词,就叫做选择。", freqRank: 17 },
+    { en: "surround", cn: "v.围绕", phonetic: "/sə'raʊnd/", example: "sur数人,round绕,数人围绕在周围。", freqRank: 17 },
+    { en: "tension", cn: "n.紧张;张力;绷紧", phonetic: "/'tenʃn/", example: "十(ten)根绳(sion)子拉在一起,拉力和张力(tension)很大,看得人紧张它们会被拉断。", freqRank: 17 },
+    { en: "underground", cn: "adj.地下的n.地铁", phonetic: "/ˌʌndə'graʊnd/", example: "under在......下面,ground地面,underground 地下的,地铁。", freqRank: 17 },
+    { en: "agricultural", cn: "adj.农业的", phonetic: "/ˌægrɪ'kʌltʃərəl/", example: "agriculture名词农业,al形容词后缀, agricultural农业的。", freqRank: 16 },
+    { en: "atmosphere", cn: "n.大气;空气;气氛", phonetic: "/'ætməsfɪər/", example: "在(at)地球(sphere)外面的保护膜(mo)就是大气层atmosphere。", freqRank: 16 },
+    { en: "billion", cn: "n.十亿num.十亿adj.十亿的", phonetic: "/'bɪljən/", example: "", freqRank: 16 },
+    { en: "cash", cn: "n.现金v.兑现支票", phonetic: "/kæʃ/", example: "谐音“开始(ca-sh)”,任何事业的开始都是由现金(cash)来支撑的。", freqRank: 16 },
+    { en: "crash", cn: "v.撞击n.碰撞", phonetic: "/kræʃ/", example: "垮(cr)成一堆灰(ash),肯定是因为撞击别的东西了。", freqRank: 16 },
+    { en: "donate", cn: "v.捐赠", phonetic: "/dəʊ'neɪt/", example: "把自己的东西都(do)给了国家(nation),叫做捐赠(donation),donate去掉名词后缀就是动词捐赠。", freqRank: 16 },
+    { en: "male", cn: "adj.雄性的;男的n.男性", phonetic: "/meɪl/", example: "妈妈,l[形似]1,e鹅。妈妈有一只雄性的鹅。", freqRank: 16 },
+    { en: "precious", cn: "adj.宝贵的", phonetic: "/'preʃəs/", example: "以前(pre-)的东西一般比较珍贵。", freqRank: 16 },
+    { en: "vocabulary", cn: "n.词汇;词汇表", phonetic: "/və'kæbjələri/", example: "vo-(我);ca-(查);bu-(不);la-(落);ry-(任意),这本词典词汇齐全,我查从不落下任意一个词汇。", freqRank: 16 },
+    { en: "admire", cn: "v.钦佩;欣赏", phonetic: "/əd'maɪər/", example: "音“我的妈呀”-好羡慕!", freqRank: 15 },
+    { en: "announce", cn: "v.宣布", phonetic: "/ə'naʊns/", example: "a+双写表示一再地,nounce说。一再地说一件事,就是在宣布它。", freqRank: 15 },
+    { en: "assist", cn: "v.帮助", phonetic: "/ə'sɪst/", example: "a+双写表示一再地,sist坐,一再地坐在你旁边指点你,就是在帮助你。", freqRank: 15 },
+    { en: "authority", cn: "n.权威,权力;当局", phonetic: "/ɔ:'θɒrəti/", example: "author创始人,ity“一体”。创始人连成一体,肯定很有权力、权威。", freqRank: 15 },
+    { en: "castle", cn: "n.城堡", phonetic: "/'kɑ:sl/", example: "一众演员(cast)都乐(le)了,因为他们要在城堡(castle)里拍戏。", freqRank: 15 },
+    { en: "clerk", cn: "n.职员,办事员", phonetic: "/klɑ:k/", example: "谐音“可拉客”(c-lerk)。可以拉客的人就是职员。", freqRank: 15 },
+    { en: "confuse", cn: "v.使困惑,使混乱,混淆", phonetic: "/kən'fju:z/", example: "con共同,fuse融合。一些东西融合在一起,会分不清楚,让人混淆、困惑。", freqRank: 15 },
+    { en: "diet", cn: "n.饮食", phonetic: "/'daɪət/", example: "待(die)到特(t)别饿,需要饮食(diet)。", freqRank: 15 },
+    { en: "hunter", cn: "n.猎人", phonetic: "/'hʌntər/", example: "hunt打猎,er人,hunter就是猎人。", freqRank: 15 },
+    { en: "insurance", cn: "n.保险", phonetic: "/ɪn'ʃʊərəns; ɪn'ʃɔ:rəns/", example: "insure确保,上保险,ance名词后缀,insurance名词保险。", freqRank: 15 },
+    { en: "kindergarten", cn: "n.幼儿园", phonetic: "/'kɪndəgɑ:tn/", example: "", freqRank: 15 },
+    { en: "maintain", cn: "v.维持;主张;供养", phonetic: "/meɪn'teɪn/", example: "", freqRank: 15 },
+    { en: "muscle", cn: "n.肌肉;力量", phonetic: "/'mʌsl/", example: "胖子练肌肉,马(mu-)上就变瘦(-scle)。", freqRank: 15 },
+    { en: "orbit", cn: "n.轨道", phonetic: "/'ɔ:bɪt/", example: "", freqRank: 15 },
+    { en: "plate", cn: "n.碟;金属板", phonetic: "/pleɪt/", example: "漂亮(p-l)的装吃(ate)的食物的东西是盘子(plate)。", freqRank: 15 },
+    { en: "poetry", cn: "n.诗", phonetic: "/'pəʊətri/", example: "", freqRank: 15 },
+    { en: "reject", cn: "v.拒绝", phonetic: "/rɪ'dʒekt/", example: "re-往回,-ject射。丢给你球,你往回射过来,说明你拒绝了我的传球。", freqRank: 15 },
+    { en: "ski", cn: "v.滑雪n.滑雪板", phonetic: "/ski:/", example: "", freqRank: 15 },
+    { en: "solar", cn: "adj.太阳的;日光的", phonetic: "/'səʊlər/", example: "太阳光一照,食物就“馊了”。", freqRank: 15 },
+    { en: "oxygen", cn: "n.[化学]氧气,[化学]氧", phonetic: "/'ɒksɪdʒən/", example: "偶我(o)可以吸(x-y)进(gen)去的是氧气(oxygen)。", freqRank: 14 },
+    { en: "button", cn: "n.按钮,纽扣v.扣...的纽扣", phonetic: "/'bʌtn/", example: "布条条(bu-t-t)上(on)钉的是纽扣button。", freqRank: 14 },
+    { en: "charity", cn: "n.慈善;施舍", phonetic: "/'tʃærəti/", example: "chari-chair(椅子);ty-(提议),富翁坐在椅子提议开展慈善事业。", freqRank: 14 },
+    { en: "discount", cn: "n.折扣", phonetic: "/'dɪskaʊnt/", example: "dis-否定,不;count算。有一部分钱不算,说明打折了。", freqRank: 14 },
+    { en: "downtown", cn: "adv.在商业区adj.商业区的n.市中心", phonetic: "/'daʊntaʊn/", example: "", freqRank: 14 },
+    { en: "exit", cn: "n.出口", phonetic: "/'eksɪt;'egzɪt/", example: "ex“一休”;it它。一休把它放在了出口处。", freqRank: 14 },
+    { en: "formal", cn: "adj.正式的n.须穿礼服的社交集会", phonetic: "/'fɔ:ml/", example: "form形式,al(形容词后缀),formal正式的。", freqRank: 14 },
+    { en: "fortune", cn: "n.运气;财富", phonetic: "/'fɔ:tʃu:n/", example: "for为了,tun(拼音)吞,e鹅,为了私吞鹅的财产。", freqRank: 14 },
+    { en: "historic", cn: "adj.历史上有名的", phonetic: "/hɪ'stɒrɪk/", example: "", freqRank: 14 },
+    { en: "ocean", cn: "n.海洋;大量", phonetic: "/'əʊʃn/", example: "谐音“哦!深!”。深邃的海洋。", freqRank: 14 },
+    { en: "plain", cn: "adj.平的;简单的;朴素的;清晰的", phonetic: "/pleɪn/", example: "pla玩,in在。小时候玩的地方肯定都是平坦的旷野、玩具也很简单。", freqRank: 14 },
+    { en: "sail", cn: "n.帆,篷;航行v.航行;启航", phonetic: "/seɪl/", example: "sail赛了,水手航海比赛开赛了。", freqRank: 14 },
+    { en: "skin", cn: "n.皮肤;兽皮", phonetic: "/skɪn/", example: "", freqRank: 14 },
+    { en: "stair", cn: "n.楼梯", phonetic: "/steər/", example: "", freqRank: 14 },
+    { en: "volcano", cn: "n.火山", phonetic: "/vɒl'keɪnəʊ/", example: "vol火炉;can能;o鸡蛋,火山像火炉能蒸熟一个鸡蛋。", freqRank: 14 },
+    { en: "elsewhere", cn: "adv.在别处", phonetic: "/ˌels'weər/", example: "else其他的,where地方,其他地方就是别处。", freqRank: 13 },
+    { en: "reference", cn: "n.参照;提及;参考书目", phonetic: "/'refrəns/", example: "", freqRank: 13 },
+    { en: "brief", cn: "adj.简洁的,简短的", phonetic: "/bri:f/", example: "哺乳(b-r)动物的衣服(ie-f)都是很简洁的。", freqRank: 13 },
+    { en: "broad", cn: "adj.宽广的", phonetic: "/brɔ:d/", example: "b(6);road(路),能让6辆车同时行驶的公路是很宽广的。", freqRank: 13 },
+    { en: "district", cn: "n.区域", phonetic: "/'dɪstrɪkt/", example: "di分开;strict严格的。行政区都是划分得很严格的。", freqRank: 13 },
+    { en: "frank", cn: "adj.坦白的", phonetic: "/fræŋk/", example: "", freqRank: 13 },
+    { en: "harmony", cn: "n.和睦", phonetic: "/'hɑ:məni/", example: "har-hard+mony-money。难以用金钱来衡量的东西社会的和谐融洽。", freqRank: 13 },
+    { en: "journal", cn: "n.记者", phonetic: "/'dʒɜ:nl/", example: "journ旅行,al都,把旅行中的事情都写下来,就可以发行一本期刊。", freqRank: 13 },
+    { en: "majority", cn: "n.多数", phonetic: "/mə'dʒɒrəti/", example: "major主要的,多数的,ity名词后缀,majority就是多数。", freqRank: 13 },
+    { en: "marathon", cn: "n.马拉松", phonetic: "/'mærəθən/", example: "音译,marathon读出来就是马拉松。", freqRank: 13 },
+    { en: "midnight", cn: "n.午夜", phonetic: "/'mɪdnaɪt/", example: "mid中间,night夜晚,夜晚的中间时刻就是午夜。", freqRank: 13 },
+    { en: "mission", cn: "n.使命;代表团;布道v.派遣;向......传教", phonetic: "/'mɪʃn/", example: "", freqRank: 13 },
+    { en: "percentage", cn: "n.百分比", phonetic: "/pə'sentɪdʒ/", example: "percent占比,age名词后缀,percentage百分比。", freqRank: 13 },
+    { en: "snack", cn: "n.零食", phonetic: "/snæk/", example: "", freqRank: 13 },
+    { en: "strategy", cn: "n.策略", phonetic: "/'strætədʒi/", example: "可以死抓(s-tra)的特技(te-gy)就是你的战略(strategy)。", freqRank: 13 },
+    { en: "tent", cn: "n.帐篷", phonetic: "/tent/", example: "ten+;t(形似)雨伞,十把雨伞撑起来可以做一个简易的帐篷。", freqRank: 13 },
+    { en: "threaten", cn: "v.恐吓", phonetic: "/'θretn/", example: "threat名词威胁,恐吓,en动词后缀,threaten动词威胁,恐吓。", freqRank: 13 },
+    { en: "update", cn: "v.更新n.更新", phonetic: "/ˌʌp'deɪt/", example: "up(朝向;到);date(日期),朝向现有的日期,就是更新。", freqRank: 13 },
+    { en: "virtual", cn: "adj.虚拟的", phonetic: "/'vɜ:tʃuəl/", example: "", freqRank: 13 },
+    { en: "wedding", cn: "n.婚礼", phonetic: "/'wedɪŋ/", example: "wed我们的,d(o)ing正在做,我们正在为他庆祝这场婚礼。", freqRank: 13 },
+    { en: "custom", cn: "n.习惯,风俗", phonetic: "/'kʌstəm/", example: "海关习惯检查,卡死(cus-)汤姆(tom)了。", freqRank: 12 },
+    { en: "awkward", cn: "adj.笨拙的;尴尬的", phonetic: "/'ɔ:kwəd/", example: "音似“我抠我的(aw-k-war-d)手”,就会非常尴尬和笨拙,让我很难堪。", freqRank: 12 },
+    { en: "clothing", cn: "n.(总称)服装", phonetic: "/'kləʊðɪŋ/", example: "", freqRank: 12 },
+    { en: "committee", cn: "n.委员会", phonetic: "/kə'mɪti/", example: "commit委托;tee被动的人;被委托的人或物,组成了委员会。", freqRank: 12 },
+    { en: "composition", cn: "n.成分;作曲;作品", phonetic: "/ˌkɒmpə'zɪʃn/", example: "compose动词构成,写作,ition名词后缀,composition名词成分,作文。", freqRank: 12 },
+    { en: "decade", cn: "n.十年", phonetic: "/'dekeɪd;dɪ'keɪd/", example: "decade谐音“滴卡(答)滴”,时间就这么滴答滴答流逝着,一晃就是十年。", freqRank: 12 },
+    { en: "description", cn: "n.描写;描述;说明书", phonetic: "/dɪ'skrɪpʃn/", example: "describe动词:描述,tion名词后缀,description名词描写。", freqRank: 12 },
+    { en: "error", cn: "n.错误", phonetic: "/'erər/", example: "音似“爱若”。“爱若(error)”是错误(error)。", freqRank: 12 },
+    { en: "factor", cn: "n.因素", phonetic: "/'fæktər/", example: "fact-事实,-or人。决定了一个事实的人,就是这个事实产生的因素。", freqRank: 12 },
+    { en: "fade", cn: "v.变弱;逐渐消失", phonetic: "/feɪd/", example: "音似“废的”。衣服褪色就成废的(fa-de)了。", freqRank: 12 },
+    { en: "inner", cn: "adj.内部的", phonetic: "/'ɪnər/", example: "in里面,n尾字母双写,er形容词后缀,inner内部的。", freqRank: 12 },
+    { en: "moral", cn: "n.道德;寓意adj.道德的;精神上的", phonetic: "/'mɒrəl/", example: "谐音“摸揉”。帮爸爸妈妈摸摸背、揉揉肩,是很有道德(moral)的事。", freqRank: 12 },
+    { en: "permission", cn: "n.许可", phonetic: "/pə'mɪʃn/", example: "", freqRank: 12 },
+    { en: "physician", cn: "n.医师", phonetic: "/fɪ'zɪʃn/", example: "physic天性,自然+ian人=研究内部器官的人就是内科医生。", freqRank: 12 },
+    { en: "plus", cn: "prep.加", phonetic: "/plʌs/", example: "漂亮(p-l)会给我们(us)加(plus)分,给别人留下正印象。", freqRank: 12 },
+    { en: "worthwhile", cn: "adj.值得做的", phonetic: "/ˌwɜ:θ'waɪl/", example: "worth(价值;值钱的);while(时间),有价值的时间,说明是值得做的。", freqRank: 12 },
+    { en: "conference", cn: "n.会议,讨论会", phonetic: "/'kɒnfərəns/", example: "", freqRank: 11 },
+    { en: "hurricane", cn: "n.飓风", phonetic: "/'hʌrɪkən/", example: "hurri急,快递;cane谐音“啃”。 hurricane飓风快速地把一个地方啃平了。", freqRank: 11 },
+    { en: "accommodation", cn: "n.住处,膳宿", phonetic: "/əˌkɒmə'deɪʃn/", example: "", freqRank: 11 },
+    { en: "affair", cn: "n.事务,事件;风流韵事", phonetic: "/ə'feər/", example: "a一个;ffair绯(闻)儿。一段绯闻儿,风流的事件。", freqRank: 11 },
+    { en: "band", cn: "n.条纹;带子;乐队", phonetic: "/bænd/", example: "", freqRank: 11 },
+    { en: "bone", cn: "n.骨头,骨骼", phonetic: "/bəʊn/", example: "谐音“崩”。刚刚撞到臀部,骨头(bone)都崩了。", freqRank: 11 },
+    { en: "claim", cn: "v.宣称;要求n.声称;索赔", phonetic: "/kleɪm/", example: "", freqRank: 11 },
+    { en: "diverse", cn: "adj.多种多样的", phonetic: "/daɪ'vɜ:s/", example: "di分开;verse转。大家都各自转动脑筋,才会有多种多样、彼此不同的答案。", freqRank: 11 },
+    { en: "nowadays", cn: "adv.现今;时下", phonetic: "/'naʊədeɪz/", example: "now(现在);a(字符);day(日);s(副词后缀),现在的日子→现今;时下。", freqRank: 11 },
+    { en: "official", cn: "adj.官方的;正式的n.官员;高级职员", phonetic: "/ə'fɪʃl/", example: "长了一张办公室(office)职员的脸(ficial),是很正式的官员或公务员。", freqRank: 11 },
+    { en: "package", cn: "n.包裹", phonetic: "/'pækɪdʒ/", example: "pack包,age年代,这个包裹是什么时代的?", freqRank: 11 },
+    { en: "philosophy", cn: "n.哲学", phonetic: "/fə'lɒsəfi/", example: "", freqRank: 11 },
+    { en: "pursue", cn: "v.追赶;继续进行", phonetic: "/pə'sju:/", example: "", freqRank: 11 },
+    { en: "sex", cn: "n.性;性别", phonetic: "/seks/", example: "", freqRank: 11 },
+    { en: "slide", cn: "n.幻灯片;滑道v.滑行", phonetic: "/slaɪd/", example: "一条蛇(s)在草丛里滑动(lide),就是在滑行。", freqRank: 11 },
+    { en: "whisper", cn: "v.耳语", phonetic: "/'wɪspər/", example: "whis吹气+per每每个人都向你吹气→窃窃私语", freqRank: 11 },
+    { en: "appoint", cn: "v.任命,委派;指定", phonetic: "/ə'pɔɪnt/", example: "领导一再地(a+双写)点(point)你,就要任命、指派你做更高的官了。", freqRank: 10 },
+    { en: "butter", cn: "n.黄油,奶油", phonetic: "/'bʌtər/", example: "发音:八(bu)阿哥特(tter)爱吃黄油。", freqRank: 10 },
+    { en: "element", cn: "n.(化学)元素;成分", phonetic: "/'elɪmənt/", example: "爱(e)的力(le)量是人们(men-)特(t)别重要的元素。", freqRank: 10 },
+    { en: "soap", cn: "n.肥皂", phonetic: "/səʊp/", example: "", freqRank: 10 },
+    { en: "software", cn: "n.软件", phonetic: "/'sɒftweər/", example: "soft软+ware器具=software软件。", freqRank: 10 },
+    { en: "upper", cn: "adj.较高的", phonetic: "/'ʌpər/", example: "", freqRank: 10 },
+    { en: "ache", cn: "v.疼痛n.疼痛", phonetic: "/eɪk/", example: "", freqRank: 10 },
+    { en: "battery", cn: "n.电池", phonetic: "/'bætri;'bætəri/", example: "电池很重要,要把它(bat-te)放在日用(r-y)品里。", freqRank: 10 },
+    { en: "beg", cn: "v.请求,乞求", phonetic: "/beg/", example: "", freqRank: 10 },
+    { en: "breathe", cn: "v.呼吸", phonetic: "/bri:ð/", example: "breath n.呼吸", freqRank: 10 },
+    { en: "drought", cn: "n.干旱", phonetic: "/draʊt/", example: "dry adj.干的=>drought.n.干旱;谐音“照他”。炽热的阳光照在大地上一干旱,干旱时期。", freqRank: 10 },
+    { en: "eagle", cn: "n.鹰", phonetic: "/'i:gl/", example: "老鹰的嘴都是一(e)个钩(gle)子。", freqRank: 10 },
+    { en: "export", cn: "n.出口v.出口", phonetic: "/'ekspɔ:t/", example: "ex-向外+port-搬运、港口=export出口", freqRank: 10 },
+    { en: "gradual", cn: "adj.逐渐的", phonetic: "/'grædʒuəl/", example: "长大(gr-)成人(adu-)是一个渐渐的过程。", freqRank: 10 },
+    { en: "location", cn: "n.位置", phonetic: "/ləʊ'keɪʃn/", example: "loca-当地的,-ate动词,-ion名词;去到一个地方,要先找到它的位置", freqRank: 10 },
+    { en: "civilization", cn: "n.文明", phonetic: "/ˌsɪvəlaɪ'zeɪʃn/", example: "civil-市民的,城市的+-ize使+tion名词词缀;该词体现了始于城市的人类文明观", freqRank: 9 },
+    { en: "dynasty", cn: "n.王朝", phonetic: "/'dɪnəsti/", example: "dy(毒药);na(哪);sty(时代)。毒药哪个朝代都有。", freqRank: 9 },
+    { en: "absolutely", cn: "adv.完全地,绝对地", phonetic: "/'æbsəlu:tli/", example: "absolute adj.绝对的+-ly副词词缀", freqRank: 9 },
+    { en: "altogether", cn: "adv.完全,总共", phonetic: "/ˌɔ:ltə'geðər/", example: "al-所有+-together一起", freqRank: 9 },
+    { en: "ancestor", cn: "n.祖先", phonetic: "/'ænsestər/", example: "an-(=ante,在前)+-ces-(走)+-tor(的人) →走在前面的人,即祖先", freqRank: 9 },
+    { en: "arrangement", cn: "n.安排,布置", phonetic: "/ə'reɪndʒmənt/", example: "arrange v.安排+-ment名词词缀", freqRank: 9 },
+    { en: "brochure", cn: "n.小册子", phonetic: "/'brəʊʃər/", example: "谐音“不如撤”。当敌人溃败的时候就每人发了一本小册子,上书:不如撤。", freqRank: 9 },
+    { en: "chief", cn: "n.首领,最高领导人adj.主要的,首要的", phonetic: "/tʃi:f/", example: "", freqRank: 9 },
+    { en: "clap", cn: "v.鼓掌", phonetic: "/klæp/", example: "", freqRank: 9 },
+    { en: "Confucius", cn: "n.孔子", phonetic: "/kən'fju:ʃəs/", example: "Con-(孔);fu-(夫);ci-(赐);us-(我们):孔夫子赐我们很多精神食粮。", freqRank: 9 },
+    { en: "definitely", cn: "adv.清楚地,当然", phonetic: "/'defɪnətli/", example: "definite adj.确定的+-ly副词词缀", freqRank: 9 },
+    { en: "gravity", cn: "n.重力", phonetic: "/'grævəti/", example: "-grav-重;重要+-ity", freqRank: 9 },
+    { en: "landscape", cn: "n.风景", phonetic: "/'lændskeɪp/", example: "land陆地+-scape,形状,状况,词源同shape.原用于绘画术语指自然风景画,后来由该词衍生后缀-scape,表示风景。", freqRank: 9 },
+    { en: "launch", cn: "v.发射;发起n.发射", phonetic: "/lɔ:ntʃ/", example: "", freqRank: 9 },
+    { en: "nowhere", cn: "adv.无处;任何地方都不", phonetic: "/'nəʊweər/", example: "no-+-where", freqRank: 9 },
+    { en: "poet", cn: "n.诗人", phonetic: "/'pəʊɪt/", example: "", freqRank: 9 },
+    { en: "rating", cn: "n.等级;等级评定;额定功率", phonetic: "/'reɪtɪŋ/", example: "rate n.等级+-ing", freqRank: 9 },
+    { en: "satellite", cn: "n.人造卫星", phonetic: "/'sætəlaɪt/", example: "音似“赛他莱特(sa-te-lli-te)”。莱特兄弟发明了飞机,很牛;而我若发明了卫星(satellite),肯定就赛他莱特了~为什么会有两个L?因为莱特是一对兄弟。", freqRank: 9 },
+    { en: "scholarship", cn: "n.奖学金;学识,学问", phonetic: "/'skɒləʃɪp/", example: "scholar学者+ship状态=scholarship学者的状态就是有学识。", freqRank: 9 },
+    { en: "soccer", cn: "n.英式足球", phonetic: "/'sɒkər/", example: "", freqRank: 9 },
+    { en: "soul", cn: "n.灵魂;心灵;人", phonetic: "/səʊl/", example: "", freqRank: 9 },
+    { en: "union", cn: "n.联盟;工会;结合", phonetic: "/'ju:niən/", example: "", freqRank: 9 },
+    { en: "waitress", cn: "n.女服务员", phonetic: "/'weɪtrəs/", example: "wait v.等待+-ress人;旁边等着的人,就是服务员", freqRank: 9 },
+    { en: "religious", cn: "adj.宗教的", phonetic: "/rɪ'lɪdʒəs/", example: "re-重复+-lig-捆,约束+-ious形容词词尾;一直约束人们思想的,引申为就是宗教的", freqRank: 8 },
+    { en: "carve", cn: "v.雕刻,切割", phonetic: "/kɑ:v/", example: "车(car)上的五只鹅(v-e)很无聊,拿尖嘴“雕刻”着车上的皮座,结果被出租车司机赶跑了。", freqRank: 8 },
+    { en: "beneath", cn: "prep.在...之下,低于", phonetic: "/bɪ'ni:θ/", example: "ben-(本);eath-earth(地的):本子埋在地的下面。", freqRank: 8 },
+    { en: "brick", cn: "n.砖块", phonetic: "/brɪk/", example: "", freqRank: 8 },
+    { en: "café", cn: "n.咖啡馆,小餐馆", phonetic: "/'kæfeɪ/", example: "", freqRank: 8 },
+    { en: "cave", cn: "n.洞穴", phonetic: "/keɪv/", example: "", freqRank: 8 },
+    { en: "champion", cn: "n.冠军;拥护者", phonetic: "/'tʃæmpiən/", example: "champ(战场)+ion(人)→战士→冠军", freqRank: 8 },
+    { en: "energetic", cn: "adj.精力充沛的", phonetic: "/ˌenə'dʒetɪk/", example: "energy n.精力+-etic形容词词缀", freqRank: 8 },
+    { en: "engine", cn: "n.引擎", phonetic: "/'endʒɪn/", example: "音译词“引擎(en-gine)”。引擎就是发动机,它是一种转化能量的机械工具。", freqRank: 8 },
+    { en: "globe", cn: "n.地球", phonetic: "/gləʊb/", example: "", freqRank: 8 },
+    { en: "hug", cn: "v.拥抱", phonetic: "/hʌg/", example: "", freqRank: 8 },
+    { en: "illustrate", cn: "v.说明", phonetic: "/'ɪləstreɪt/", example: "il-不断+lustr-光+-ate,表动词→不断给光明→说明。", freqRank: 8 },
+    { en: "investigate", cn: "v.调查", phonetic: "/ɪn'vestɪgeɪt/", example: "收买、投资(invest)一个门口(i-gate)的门卫,为了调查(investigate)里面发生的事。", freqRank: 8 },
+    { en: "legal", cn: "adj.合法的", phonetic: "/'li:gl/", example: "leg-法+-al形容词。", freqRank: 8 },
+    { en: "neat", cn: "adj.整洁的", phonetic: "/ni:t/", example: "", freqRank: 8 },
+    { en: "performer", cn: "n.演出者;执行者;演奏者", phonetic: "/pə'fɔ:mər/", example: "perform表演+er人=表演的人,也就是表演者。", freqRank: 8 },
+    { en: "poisonous", cn: "adj.有毒的", phonetic: "/'pɔɪzənəs/", example: "poison n.毒药+-ous形容词词缀", freqRank: 8 },
+    { en: "procedure", cn: "n.程序,手续;步骤", phonetic: "/prə'si:dʒər/", example: "proced-前进;-ure类似sure,确定。往前进,得先确定步骤。", freqRank: 8 },
+    { en: "pyramid", cn: "n.金字塔", phonetic: "/'pɪrəmɪd/", example: "音似“披了谜的”。金字塔身上是披了许多未解之谜的。", freqRank: 8 },
+    { en: "region", cn: "n.地区;范围", phonetic: "/'ri:dʒən/", example: "", freqRank: 8 },
+    { en: "roof", cn: "n.屋顶", phonetic: "/ru:f/", example: "", freqRank: 8 },
+    { en: "shallow", cn: "adj.浅的", phonetic: "/'ʃæləʊ/", example: "沙(sha)子都露(llow)出来了,证明这里的水很浅(shallow)。", freqRank: 8 },
+    { en: "soldier", cn: "n.士兵", phonetic: "/'səʊldʒər/", example: "", freqRank: 8 },
+    { en: "universe", cn: "n.宇宙", phonetic: "/'ju:nɪvɜ:s/", example: "uni-一+verse转:万物转到一起,变成了宇宙。", freqRank: 8 },
+    { en: "virtue", cn: "n.优美品德", phonetic: "/'vɜ:tʃu:/", example: "", freqRank: 8 },
+    { en: "statue", cn: "n.雕塑", phonetic: "/'stætʃu:/", example: "stat静止,ue优异。雕像通常都是一个静止的优异的人。", freqRank: 7 },
+    { en: "bury", cn: "v.埋葬,掩埋", phonetic: "/'beri/", example: "", freqRank: 7 },
+    { en: "context", cn: "n.背景;语境", phonetic: "/'kɒntekst/", example: "con-共同+-text-文章→背景,语境", freqRank: 7 },
+    { en: "establish", cn: "v.建立", phonetic: "/ɪ'stæblɪʃ/", example: "创立、建立(establish)一个东西,就是要让它在外面(e)稳定(stabl)下来,使它立足。", freqRank: 7 },
+    { en: "extinction", cn: "n.灭绝", phonetic: "/ɪk'stɪŋkʃn/", example: "extinct adj.灭绝的+-ion名词词缀", freqRank: 7 },
+    { en: "false", cn: "adj.错误的;假的", phonetic: "/fɔ:ls/", example: "", freqRank: 7 },
+    { en: "fancy", cn: "n.喜爱adj.奇特的;昂贵的v.设想", phonetic: "/'fænsi/", example: "谐音“欢喜”。喜欢的东西让人很欢喜。", freqRank: 7 }
+];
+// ==================== 应用逻辑 ====================
+const CONFIG = { DAILY_GOAL: 30, REVIEW_INTERVAL: 3 };
+
+let state = {
+    currentIndex: 0,
+    todayMastered: new Set(),
+    masteredTimestamps: {},
+    streak: 0,
+    todayTasks: [],
+    allWords: WORD_BANK,
+    spellQueue: [],
+    spellIndex: 0
+};
+
+const el = {
+    wordEn: document.getElementById('wordEn'),
+    wordPhonetic: document.getElementById('wordPhonetic'),
+    wordCn: document.getElementById('wordCn'),
+    exampleSentence: document.getElementById('exampleSentence'),
+    card: document.getElementById('wordCard'),
+    nextBtn: document.getElementById('nextBtn'),
+    masterBtn: document.getElementById('masterBtn'),
+    spellBtn: document.getElementById('spellBtn'),
+    resetTodayBtn: document.getElementById('resetTodayBtn'),
+    totalWords: document.getElementById('totalWords'),
+    masteredCount: document.getElementById('masteredCount'),
+    todayCount: document.getElementById('todayCount'),
+    dailyCount: document.getElementById('dailyCount'),
+    dailyFill: document.getElementById('dailyFill'),
+    streakDisplay: document.getElementById('streakDisplay'),
+    progressFill: document.getElementById('progressFill'),
+    progressPercent: document.getElementById('progressPercent'),
+    spellModal: document.getElementById('spellModal'),
+    spellCn: document.getElementById('spellCn'),
+    spellInput: document.getElementById('spellInput'),
+    spellResult: document.getElementById('spellResult'),
+    submitSpell: document.getElementById('submitSpell'),
+    closeSpell: document.getElementById('closeSpell')
+};
+
+function loadData() {
+    const today = new Date().toLocaleDateString();
+    const saved = localStorage.getItem('stardew588State');
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.date === today) {
+            state.todayMastered = new Set(parsed.todayMastered || []);
+            state.masteredTimestamps = parsed.masteredTimestamps || {};
+            state.streak = parsed.streak || 0;
+        } else {
+            state.masteredTimestamps = parsed.masteredTimestamps || {};
+            state.streak = parsed.streak || 0;
+            state.todayMastered = new Set();
+            const lastDate = new Date(parsed.date);
+            const now = new Date(today);
+            const diffDays = Math.floor((now - lastDate) / (86400000));
+            if (diffDays === 1) state.streak++;
+            else if (diffDays > 1) state.streak = 0;
+        }
+    }
+}
+
+function saveData() {
+    const data = {
+        date: new Date().toLocaleDateString(),
+        todayMastered: Array.from(state.todayMastered),
+        masteredTimestamps: state.masteredTimestamps,
+        streak: state.streak
+    };
+    localStorage.setItem('stardew588State', JSON.stringify(data));
+}
+
+function buildDailyTasks() {
+    const all = state.allWords;
+    const candidates = all.filter(w => {
+        if (state.todayMastered.has(w.en)) return false;
+        if (state.masteredTimestamps[w.en]) {
+            const last = new Date(state.masteredTimestamps[w.en]);
+            const now = new Date();
+            const days = Math.floor((now - last) / 86400000);
+            if (days < CONFIG.REVIEW_INTERVAL) return false;
+        }
+        return true;
+    });
+    candidates.sort((a, b) => b.freqRank - a.freqRank);
+    state.todayTasks = candidates.slice(0, CONFIG.DAILY_GOAL);
+}
+
+function showWord(index) {
+    if (!state.todayTasks || state.todayTasks.length === 0) {
+        el.wordEn.textContent = "🎉";
+        el.wordCn.textContent = "今日任务已完成！";
+        el.wordPhonetic.textContent = "";
+        el.exampleSentence.textContent = "太棒了，休息一下吧！";
+        return;
+    }
+    const realIndex = index % state.todayTasks.length;
+    const word = state.todayTasks[realIndex];
+    el.wordEn.textContent = word.en;
+    el.wordPhonetic.textContent = word.phonetic;
+    el.wordCn.textContent = word.cn;
+    el.exampleSentence.textContent = word.example || "（暂无例句）";
+    state.currentIndex = realIndex;
+}
+
+function goToNext() {
+    showWord(state.currentIndex + 1);
+}
+
+function markMastered() {
+    const currentWord = state.todayTasks[state.currentIndex];
+    if (!currentWord) return;
+    state.todayMastered.add(currentWord.en);
+    state.masteredTimestamps[currentWord.en] = new Date().toISOString();
+    saveData();
+    updateStats();
+    goToNext();
+}
+
+function updateStats() {
+    const todayDone = state.todayMastered.size;
+    const percent = Math.min(100, (todayDone / CONFIG.DAILY_GOAL) * 100);
+    el.dailyFill.style.width = percent + '%';
+    el.dailyCount.textContent = `${todayDone}/${CONFIG.DAILY_GOAL}`;
+    const totalMastered = Object.keys(state.masteredTimestamps).length;
+    el.masteredCount.textContent = totalMastered;
+    el.totalWords.textContent = state.allWords.length;
+    el.todayCount.textContent = todayDone;
+    el.streakDisplay.textContent = state.streak;
+    const overallPercent = state.allWords.length ? Math.round((totalMastered / state.allWords.length) * 100) : 0;
+    el.progressFill.style.width = overallPercent + '%';
+    el.progressPercent.textContent = overallPercent + '%';
+}
+
+// 拼写测试
+function startSpellTest() {
+    const masteredKeys = Object.keys(state.masteredTimestamps);
+    if (masteredKeys.length === 0) {
+        // 改为在拼写模态框内显示提示
+        el.spellCn.textContent = "暂无已掌握单词，请先学习！";
+        el.spellInput.style.display = "none";
+        el.submitSpell.style.display = "none";
+        el.spellResult.textContent = "";
+        el.spellModal.classList.add('active');
+        return;
+    }
+    // 恢复正常输入
+    el.spellInput.style.display = "";
+    el.submitSpell.style.display = "";
+    const shuffled = masteredKeys.sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, 20);
+    state.spellQueue = selected.map(key =>
+        state.allWords.find(w => w.en === key)
+    ).filter(Boolean);
+    state.spellIndex = 0;
+    showCurrentSpell();
+    el.spellModal.classList.add('active');
+    el.spellInput.focus();
+}
+
+function showCurrentSpell() {
+    if (state.spellIndex >= state.spellQueue.length) {
+        el.spellResult.innerHTML = "🎉 全部拼写完成！";
+        el.spellResult.style.color = "#4caf50";
+        setTimeout(() => el.spellModal.classList.remove('active'), 1200);
+        return;
+    }
+    const word = state.spellQueue[state.spellIndex];
+    el.spellCn.textContent = word.cn;
+    el.spellInput.value = "";
+    el.spellResult.textContent = "";
+    const progEl = document.getElementById('spellProgress');
+    if (progEl) progEl.textContent = `第 ${state.spellIndex + 1} / ${state.spellQueue.length} 个`;
+}
+
+function checkSpelling() {
+    const word = state.spellQueue[state.spellIndex];
+    if (!word) return;
+    const userInput = el.spellInput.value.trim().toLowerCase();
+    const correct = word.en.toLowerCase();
+    if (userInput === "") { el.spellResult.textContent = "请输入单词！"; return; }
+    if (userInput === correct) {
+        el.spellResult.innerHTML = "✅ 正确！";
+        el.spellResult.style.color = "#4caf50";
+        setTimeout(() => { state.spellIndex++; showCurrentSpell(); }, 600);
+    } else {
+        el.spellResult.innerHTML = `❌ 错误！正确答案：${word.en}`;
+        el.spellResult.style.color = "#f44336";
+        setTimeout(() => { state.spellIndex++; showCurrentSpell(); }, 1200);
+    }
+}
+
+// 事件绑定
+el.nextBtn.addEventListener('click', goToNext);
+el.masterBtn.addEventListener('click', markMastered);
+el.spellBtn.addEventListener('click', startSpellTest);
+el.submitSpell.addEventListener('click', checkSpelling);
+el.closeSpell.addEventListener('click', () => el.spellModal.classList.remove('active'));
+el.resetTodayBtn.addEventListener('click', () => {
+    if (confirm("确定要重置今日任务吗？这将清空今天的打卡记录。")) {
+        state.todayMastered.clear();
+        saveData();
+        buildDailyTasks();
+        showWord(0);
+        updateStats();
+    }
+});
+el.card.addEventListener('click', goToNext);
+
+document.addEventListener('keydown', (e) => {
+    if (el.spellModal.classList.contains('active')) return;
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); goToNext(); }
+    if (e.key === 'ArrowRight') markMastered();
+});
+
+// 初始化
+loadData();
+buildDailyTasks();
+showWord(0);
+updateStats();
+</script>
+</body>
+</html>
